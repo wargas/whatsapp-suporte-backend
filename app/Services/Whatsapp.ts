@@ -2,6 +2,14 @@ import { ApplicationContract } from '@ioc:Adonis/Core/Application'
 import qrcode from 'qrcode-terminal'
 import { Client, Events } from "whatsapp-web.js";
 
+declare module 'puppeteer' {
+    interface LaunchOptions {
+        browserWSEndpoint: string
+    }
+}
+
+
+
 export class WhatsappService {
 
     public client: Client;
@@ -18,10 +26,17 @@ export class WhatsappService {
             const session = await Redis.get('whatsapp:session')
             if (session) {
                 this.client = new Client({
-                    session: JSON.parse(session)
+                    session: JSON.parse(session),
+                    puppeteer: {
+                        browserWSEndpoint: 'ws://157.245.218.108:3000/'
+                    }
                 })
             } else {
-                this.client = new Client({})
+                this.client = new Client({
+                    puppeteer: {
+                        browserWSEndpoint: 'ws://157.245.218.108:3000/'
+                    }
+                })
             }
 
             this.client.on(Events.READY, ev => {
