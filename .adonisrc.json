@@ -28,9 +28,9 @@
     "@adonisjs/core",
     "@adonisjs/lucid",
     "@adonisjs/auth",
-    "./providers/WhatsappProvider",
     "@adonisjs/redis",
-    "./providers/SocketProvider"
+    "./providers/SocketProvider",
+    "./providers/WhatsappProvider"
   ],
   "aceProviders": [
     "@adonisjs/repl"

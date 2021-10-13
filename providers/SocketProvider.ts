@@ -1,20 +1,26 @@
 import { ApplicationContract } from '@ioc:Adonis/Core/Application'
-import { Server } from 'socket.io'
+import { WhatsappService } from 'App/Services/Whatsapp'
+import { Server, Socket } from 'socket.io'
 
 export default class SocketProvider {
 
-  server: Server;
+ 
 
   constructor (protected app: ApplicationContract) {
   }
 
   public register () {
     // Register your own bindings
-    this.server = new Server({
-      cors: {
-        origin: '*'
-      }
+    this.app.container.singleton('App/Socket', () => {
+     const server = new Server({
+        cors: {
+          origin: '*'
+        }
+      })
+
+      return server
     })
+    
   }
 
   public async boot () {
@@ -24,10 +30,14 @@ export default class SocketProvider {
   public async ready () {
     // App is ready
     const AdonisServer = this.app.container.use('Adonis/Core/Server')
-    this.server.attach(AdonisServer.instance!)
+    const server = this.app.container.use('App/Socket')
+    const WhatsApp: WhatsappService = this.app.container.use('App/Whatsapp')
+    server.attach(AdonisServer.instance!)
 
-    this.server.on('connection', socket => {
-      this.app.logger.info(`Connected: ${socket.id}`)
+    server.on('connection', (socket: Socket) => {
+      this.app.logger.info(`Connected: ${socket.id} | ${WhatsApp.status}`)
+
+      socket.broadcast.emit('status', 'READY')
     })
 
   }

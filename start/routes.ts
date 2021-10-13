@@ -1,3 +1,4 @@
+import Socket from '@ioc:App/Socket'
 import Route from '@ioc:Adonis/Core/Route'
 
 Route.group(() => {
@@ -7,11 +8,13 @@ Route.group(() => {
 
 Route.group(() => {
   Route.get('/suportes', 'SuportesController.index')
+  Route.get('/suportes/status', 'SuportesController.status')
   Route.get('/suportes/:id', 'SuportesController.show')
   Route.get('/suportes/:id/messages', 'SuportesController.getMessages')
   Route.post('/suportes/:id/send', 'SuportesController.sendMessage')
 }).prefix('api/v1').middleware('auth')
 
 Route.get('/', async () => {
+
   return { suporte: 'v1' }
 })

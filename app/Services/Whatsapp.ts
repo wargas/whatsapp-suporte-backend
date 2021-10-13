@@ -1,14 +1,14 @@
 import { ApplicationContract } from '@ioc:Adonis/Core/Application'
 import qrcode from 'qrcode-terminal'
-import { Client, Events } from "whatsapp-web.js";
+import { Events } from "whatsapp-web.js";
+import Client from './Client.js'
 
 declare module 'puppeteer' {
     interface LaunchOptions {
-        browserWSEndpoint: string
+        browserWSEndpoint?: string,
+        headless: boolean
     }
 }
-
-
 
 export class WhatsappService {
 
@@ -20,6 +20,7 @@ export class WhatsappService {
     }
 
     async start() {
+
         try {
             const Redis = this.app.container.use('Adonis/Addons/Redis')
             const Event = this.app.container.use('Adonis/Core/Event')
@@ -28,14 +29,17 @@ export class WhatsappService {
                 this.client = new Client({
                     session: JSON.parse(session),
                     puppeteer: {
-                        browserWSEndpoint: 'ws://157.245.218.108:3000/'
+                        headless: true
                     }
+                    // puppeteer: {
+                    //     browserWSEndpoint: 'ws://157.245.218.108:3000/'
+                    // }
                 })
             } else {
                 this.client = new Client({
-                    puppeteer: {
-                        browserWSEndpoint: 'ws://157.245.218.108:3000/'
-                    }
+                    // puppeteer: {
+                    //     browserWSEndpoint: 'ws://157.245.218.108:3000/'
+                    // }
                 })
             }
 
@@ -43,13 +47,20 @@ export class WhatsappService {
                 if (this.client.info.pushname) {
                     this.status = 'READY'
                     this.app.logger.info(`Whatsapp ready: ${this.client.info.wid.user} `)
+
+                    const socket = this.app.container.use('App/Socket')
+
+                    socket.emit('status', this.status)
                 }
+
+
             })
 
             this.client.on(Events.QR_RECEIVED, qr => {
                 qrcode.generate(qr, { small: true })
             })
 
+            
             this.client.on(Events.AUTHENTICATED, session => {
                 Redis.set('whatsapp:session', JSON.stringify(session))
             })

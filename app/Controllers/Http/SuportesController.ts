@@ -38,4 +38,10 @@ export default class SuportesController {
 
         return await Whatsapp.client.sendMessage(chat.chat_id, message)
     }
+
+    async status() {
+        const status = Whatsapp.status;
+
+        return { status }
+    }
 }

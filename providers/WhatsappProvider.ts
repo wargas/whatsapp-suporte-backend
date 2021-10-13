@@ -20,6 +20,7 @@ export default class WhatsappProvider {
   }
 
   public async ready () {
+    this.app.container.use('App/Socket').emit('status', 'PENDENTE')
     await this.app.container.use('App/Whatsapp').start()
   }
 
