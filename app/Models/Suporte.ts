@@ -26,6 +26,15 @@ export default class Suporte extends BaseModel {
   @column()
   public setor: string
 
+  @column.dateTime()
+  public openedAt: DateTime
+
+  @column.dateTime()
+  public closedAt: DateTime
+
+  @column()
+  public user_id: Number
+
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime
 

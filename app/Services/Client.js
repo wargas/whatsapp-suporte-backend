@@ -158,7 +158,11 @@ class Client extends EventEmitter {
 
         }
 
-        await page.evaluate(ExposeStore, moduleRaid.toString());
+        try {
+            await page.evaluate(ExposeStore, moduleRaid.toString());
+        } catch (e) {
+
+        }
 
         // Get session tokens
         const localStorage = JSON.parse(await page.evaluate(() => {

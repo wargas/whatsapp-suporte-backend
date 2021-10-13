@@ -14,6 +14,7 @@ export class WhatsappService {
 
     public client: Client;
     public status: string;
+    
 
     constructor(private app: ApplicationContract) {
         this.status = 'PENDENTE'
@@ -27,9 +28,9 @@ export class WhatsappService {
             const session = await Redis.get('whatsapp:session')
             if (session) {
                 this.client = new Client({
-                    session: JSON.parse(session),
+                    // session: JSON.parse(session),
                     puppeteer: {
-                        headless: true
+                        headless: false
                     }
                     // puppeteer: {
                     //     browserWSEndpoint: 'ws://157.245.218.108:3000/'
@@ -37,6 +38,9 @@ export class WhatsappService {
                 })
             } else {
                 this.client = new Client({
+                    puppeteer: {
+                        headless: false
+                    }
                     // puppeteer: {
                     //     browserWSEndpoint: 'ws://157.245.218.108:3000/'
                     // }
@@ -62,7 +66,7 @@ export class WhatsappService {
 
             
             this.client.on(Events.AUTHENTICATED, session => {
-                Redis.set('whatsapp:session', JSON.stringify(session))
+                // Redis.set('whatsapp:session', JSON.stringify(session))
             })
 
             this.client.on(Events.MESSAGE_RECEIVED, message => {

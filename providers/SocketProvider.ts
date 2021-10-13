@@ -4,15 +4,17 @@ import { Server, Socket } from 'socket.io'
 
 export default class SocketProvider {
 
- 
 
-  constructor (protected app: ApplicationContract) {
+  public static needsApplication = true
+
+
+  constructor(protected app: ApplicationContract) {
   }
 
-  public register () {
+  public register() {
     // Register your own bindings
     this.app.container.singleton('App/Socket', () => {
-     const server = new Server({
+      const server = new Server({
         cors: {
           origin: '*'
         }
@@ -20,29 +22,31 @@ export default class SocketProvider {
 
       return server
     })
-    
+
   }
 
-  public async boot () {
+  public async boot() {
     // All bindings are ready, feel free to use them
   }
 
-  public async ready () {
+  public async ready() {
     // App is ready
     const AdonisServer = this.app.container.use('Adonis/Core/Server')
-    const server = this.app.container.use('App/Socket')
-    const WhatsApp: WhatsappService = this.app.container.use('App/Whatsapp')
-    server.attach(AdonisServer.instance!)
 
-    server.on('connection', (socket: Socket) => {
-      this.app.logger.info(`Connected: ${socket.id} | ${WhatsApp.status}`)
+    if (AdonisServer.instance) {
+      const server = this.app.container.use('App/Socket')
+      const WhatsApp: WhatsappService = this.app.container.use('App/Whatsapp')
+      server.attach(AdonisServer.instance!)
 
-      socket.broadcast.emit('status', 'READY')
-    })
+      server.on('connection', (socket: Socket) => {
+        this.app.logger.info(`Connected: ${socket.id} | ${WhatsApp.status}`)
 
+        socket.broadcast.emit('status', 'READY')
+      })
+    }
   }
 
-  public async shutdown () {
+  public async shutdown() {
     // Cleanup, since app is going down
   }
 }

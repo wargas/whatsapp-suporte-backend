@@ -2,12 +2,61 @@ import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Whatsapp from '@ioc:App/Whatsapp';
 
 import Suporte from "App/Models/Suporte";
+import { DateTime } from 'luxon';
 
 export default class SuportesController {
 
     async index() {
         return await Suporte.query()
             // .where('status', 'ABERTO')
+    }
+
+    async userSuportes({auth}: HttpContextContract) {
+        const suportes = await Suporte.query()
+            .where('status', 'ABERTO')
+            .where('user_id', auth?.user?.id || 0)
+        
+        const abertos = await Suporte.query()
+            .where('status', 'ABERTO')
+            .whereNull('user_id')
+
+        return {suportes, fila: abertos.length}
+    }
+
+    async finalizarSuporte({params, auth}: HttpContextContract) {
+        const suporte = await Suporte.query()
+            .where('id', params.id)
+            .where('user_id', auth?.user?.id || 0 )
+            .first()
+
+        if(!suporte) {
+            return {error: 'NOT_FOUND'}
+        }
+
+        suporte.status = 'FECHADO'
+        suporte.closedAt = DateTime.local()
+        await suporte.save()
+
+        return suporte
+
+    }
+
+    async getNextSuporte({auth}: HttpContextContract) {
+        const next = await Suporte.query()
+            .whereNull('user_id')
+            .where('status', 'aberto')
+            .orderBy('opened_at', 'asc')
+            .first()
+
+        if(!next) {
+            return {error: 'NOT_FOUND'}
+        }
+
+        next.user_id = auth.user?.id || 0
+        await next.save()
+
+        return next;
+
     }
 
     async show(ctx: HttpContextContract) {

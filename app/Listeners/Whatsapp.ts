@@ -1,8 +1,7 @@
-// import { EventsList } from '@ioc:Adonis/Core/Event'
-// import Chat from 'App/Models/Chat';
 import Socket from '@ioc:App/Socket';
 import Wpp from '@ioc:App/Whatsapp'
 import Suporte from 'App/Models/Suporte';
+import { DateTime } from 'luxon';
 import { Message } from 'whatsapp-web.js';
 
 export default class Whatsapp {
@@ -13,42 +12,49 @@ export default class Whatsapp {
 
         try {
 
-            if(message.id._serialized === 'status@broadcast') {
+            if (message.id._serialized === 'status@broadcast') {
                 console.log('message from status')
-                return ;
-            }
-            const chat = await Wpp.client.getChatById(message.from) 
-
-            if(chat.isGroup) {
-                console.log('message from group')  
                 return;
             }
+            const chat = await Wpp.client.getChatById(message.from)
 
-            const suporte = await Suporte.updateOrCreate({
-                chat_id: message.from
-            }, {
-                name: contato.name, 
-                pushname: contato.pushname,
-                image_url: imageUrl,
-                chat_id: message.from,
-                contact_id: contato.id._serialized
-            })
-    
-            Socket.emit('message', {...message, chat})
-            
-    
-            console.log(suporte.id)
+            if (chat.isGroup) {
+                console.log('message from group')
+                return;
+            }
+            if (!message.fromMe) {
+                let suporte = await Suporte
+                    .query()
+                    .where('chat_id', message.from)
+                    .where('status', 'ABERTO')
+                    .first()
 
-            
-        } catch(error) {
+                if (!suporte) {
+                    suporte = await Suporte.create({
+                        name: contato.name,
+                        pushname: contato.pushname,
+                        image_url: imageUrl,
+                        chat_id: message.from,
+                        contact_id: contato.id._serialized,
+                        status: 'ABERTO',
+                        openedAt: DateTime.local()
+                    })
+                }
+                console.log(suporte.id)
+            }
 
-            console.log(message.from)
+            Socket.emit('message', { ...message, chat })
+
+
+        } catch (error) {
+
+            console.log('error', error)
             return;
         }
-        
 
-        
-        
+
+
+
     }
 
     async onSendMessage(message: Message) {

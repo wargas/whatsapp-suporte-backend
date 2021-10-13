@@ -8,6 +8,9 @@ Route.group(() => {
 
 Route.group(() => {
   Route.get('/suportes', 'SuportesController.index')
+  Route.get('/suportes/user', 'SuportesController.userSuportes')
+  Route.get('/suportes/next', 'SuportesController.getNextSuporte')
+  Route.post('/suportes/:id/finalizar', 'SuportesController.finalizarSuporte')
   Route.get('/suportes/status', 'SuportesController.status')
   Route.get('/suportes/:id', 'SuportesController.show')
   Route.get('/suportes/:id/messages', 'SuportesController.getMessages')
