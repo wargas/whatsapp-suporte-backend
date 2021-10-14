@@ -5,4 +5,5 @@ coverage
 .DS_STORE
 .env
 tmp
-resorces/media/*
+resources/media/*
+!resources/media/.gitkeep
