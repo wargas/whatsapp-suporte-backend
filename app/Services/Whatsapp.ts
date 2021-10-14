@@ -1,6 +1,6 @@
 import { ApplicationContract } from '@ioc:Adonis/Core/Application'
 import qrcode from 'qrcode-terminal'
-import { Events } from "whatsapp-web.js";
+import { Events, Client as ClientWpp, Chat } from "whatsapp-web.js";
 import Client from './Client.js'
 
 declare module 'puppeteer' {
@@ -12,7 +12,7 @@ declare module 'puppeteer' {
 
 export class WhatsappService {
 
-    public client: Client;
+    public client: ClientWpp;
     public status: string;
     
 
@@ -22,30 +22,17 @@ export class WhatsappService {
 
     async start() {
 
+        
         try {
             const Redis = this.app.container.use('Adonis/Addons/Redis')
             const Event = this.app.container.use('Adonis/Core/Event')
             const session = await Redis.get('whatsapp:session')
-            if (session) {
-                this.client = new Client({
-                    // session: JSON.parse(session),
-                    puppeteer: {
-                        headless: false
-                    }
-                    // puppeteer: {
-                    //     browserWSEndpoint: 'ws://157.245.218.108:3000/'
-                    // }
-                })
-            } else {
-                this.client = new Client({
-                    puppeteer: {
-                        headless: false
-                    }
-                    // puppeteer: {
-                    //     browserWSEndpoint: 'ws://157.245.218.108:3000/'
-                    // }
-                })
-            }
+            this.client = new Client({
+                puppeteer: {
+                    headless: false,
+                    browserWSEndpoint: 'ws://127.0.0.1:9222/devtools/browser/1d30e342-7522-4a8e-a646-337206de2361'
+                }
+            })
 
             this.client.on(Events.READY, ev => {
                 if (this.client.info.pushname) {
@@ -85,6 +72,20 @@ export class WhatsappService {
         } catch (err) {
             this.app.logger.error('Erro no Whatsapp')
         }
+    }
+
+    async getChats(ids: string[] = []): Promise<Chat[]> {
+        if(this.client.info.pushname) {
+            const chats = await this.client.getChats()
+
+            if(ids.length === 0) {
+                return chats
+            }
+
+            return chats.filter(chat =>  ids.some(id => id === chat.id._serialized))
+        }
+
+        return []
     }
 
 }

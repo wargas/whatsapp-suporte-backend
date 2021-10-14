@@ -12,15 +12,27 @@ export default class SuportesController {
     }
 
     async userSuportes({auth}: HttpContextContract) {
+
         const suportes = await Suporte.query()
             .where('status', 'ABERTO')
             .where('user_id', auth?.user?.id || 0)
+            
+        
+        const ids = suportes.map(item => item.chat_id)
+
+        const chats = await Whatsapp.getChats(ids)
         
         const abertos = await Suporte.query()
             .where('status', 'ABERTO')
             .whereNull('user_id')
 
-        return {suportes, fila: abertos.length}
+        return {
+            suportes: suportes.map(suporte => {
+                const chat = chats.find(chat => chat.id._serialized === suporte.chat_id)
+            return {
+                ...suporte.serialize(), 
+                unreadCount: chat?.unreadCount || 0  }
+        }) , fila: abertos.length}
     }
 
     async finalizarSuporte({params, auth}: HttpContextContract) {

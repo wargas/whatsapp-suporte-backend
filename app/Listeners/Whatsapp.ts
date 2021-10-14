@@ -28,6 +28,7 @@ export default class Whatsapp {
                     .where('chat_id', message.from)
                     .where('status', 'ABERTO')
                     .first()
+               
 
                 if (!suporte) {
                     suporte = await Suporte.create({
@@ -59,6 +60,5 @@ export default class Whatsapp {
 
     async onSendMessage(message: Message) {
         console.log(message)
-        // Socket.emit('message', message)
     }
 }
