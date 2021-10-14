@@ -30,7 +30,7 @@ export class WhatsappService {
             this.client = new Client({
                 puppeteer: {
                     headless: false,
-                    browserWSEndpoint: 'ws://127.0.0.1:9222/devtools/browser/1d30e342-7522-4a8e-a646-337206de2361'
+                    // browserWSEndpoint: 'ws://127.0.0.1:9222/devtools/browser/cd3986a4-2ffc-42df-9277-6f7c96b477b7'
                 }
             })
 
@@ -86,6 +86,13 @@ export class WhatsappService {
         }
 
         return []
+    }
+
+    async getChat(id: string): Promise<Chat> {
+        if(this.client.info.pushname) {
+            return this.client.getChatById(id)
+        }   
+        return {} as Chat
     }
 
 }

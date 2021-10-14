@@ -71,8 +71,16 @@ export default class SuportesController {
 
     }
 
-    async show(ctx: HttpContextContract) {
-        return await Suporte.findBy('id', ctx.params.id)
+    async show({params, response}: HttpContextContract) {
+        const suporte = await Suporte.findBy('id', params.id)
+        if(!suporte) {
+            return response.status(404).json({})
+        }
+        const chat = await Whatsapp.getChat(suporte?.chat_id)
+
+        await chat.sendSeen()
+
+        return suporte
     }
 
     async getMessages(ctx: HttpContextContract) {
@@ -82,9 +90,9 @@ export default class SuportesController {
         }
 
         const chat = await Whatsapp.client.getChatById(suporte.chat_id);
-
+        await chat.sendSeen()
+        
         const messages = await chat.fetchMessages({limit: 10})
-
         return messages
     }
 
