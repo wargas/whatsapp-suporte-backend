@@ -1,5 +1,4 @@
 import { ApplicationContract } from '@ioc:Adonis/Core/Application'
-import Whatsapp from '@ioc:App/Whatsapp';
 import qrcode from 'qrcode-terminal'
 import { Events, Client as ClientWpp, Chat } from "whatsapp-web.js";
 import Client from './Client.js'
@@ -8,6 +7,12 @@ declare module 'puppeteer' {
     interface LaunchOptions {
         browserWSEndpoint?: string,
         headless?: boolean
+    }
+}
+ 
+declare module 'whatsapp-web.js' {   
+    interface Client { 
+        getMessageById(messageId: string): Promise<any>
     }
 }
 
@@ -21,16 +26,16 @@ export class WhatsappService {
         this.status = 'PENDENTE'
     }
 
-    async start() {
+    async start() { 
         try {
             const Event = this.app.container.use('Adonis/Core/Event')
             const Redis = this.app.container.use('Adonis/Addons/Redis')
             // const session = await Redis.get('whatsapp:session')
             this.client = new Client({
-                puppeteer: {
-                    headless: false,
-                    browserWSEndpoint: 'ws://127.0.0.1:9222/devtools/browser/8f82e68e-6106-4e71-b364-1160138dd8cb'
-                }
+                // puppeteer: {
+                //     headless: false,
+                //     browserWSEndpoint: 'ws://localhost:9222/devtools/browser/c2b23f58-c853-4542-bf85-752ec79b1009'
+                // }
             })
 
             this.client.on(Events.READY, () => {
@@ -46,7 +51,7 @@ export class WhatsappService {
 
             })
 
-            this.client.on(Events.QR_RECEIVED, qr => {
+            this.client.on(Events.QR_RECEIVED, qr => {  
                 qrcode.generate(qr, { small: true })
             })
 
@@ -66,19 +71,19 @@ export class WhatsappService {
                 Event.emit('whatsapp:MESSAGE_ACK', message)
             })
 
-            this.client.initialize()
+            this.client.initialize() 
         } catch (err) {
             this.app.logger.error('Erro no Whatsapp')
-        }
+        }     
     }
 
     async getChats(ids: string[] = []): Promise<Chat[]> {
         if(this.client.info.pushname) {
             const chats = await this.client.getChats()
 
-            if(ids.length === 0) {
+            if(ids.length === 0) { 
                 return chats
-            }
+            }  
 
             return chats.filter(chat =>  ids.some(id => id === chat.id._serialized))
         }
@@ -93,7 +98,5 @@ export class WhatsappService {
         }   
         return {} as Chat
     }
-
-    
 
 }

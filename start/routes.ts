@@ -17,6 +17,7 @@ Route.group(() => {
   Route.post('/suportes/:id/send', 'SuportesController.sendMessage')
 }).prefix('api/v1').middleware('auth')
 
+Route.get('api/v1/media/:id', 'SuportesController.media')
 Route.get('/', async () => {
 
   return { suporte: 'v1' }

@@ -947,7 +947,42 @@ class Client extends EventEmitter {
     }
 
     async getMessageById(msgId) {
-        
+
+        const msg = await this.pupPage.evaluate(async (msgId) => {
+
+            const _msg = await window.Store.Msg.get(msgId)
+
+            return {
+                body: _msg.body,
+                id: _msg.id,
+                directPath: _msg.directPath,
+                inviteCode: _msg.inviteCode,
+                inviteCodeExp: _msg.inviteCodeExp,
+                inviteGrp: _msg.inviteGrp,
+                inviteGrpName: _msg.inviteGrpName,
+                isForwarded: _msg.isForwarded,
+                isStatusV3: _msg.isStatusV3,
+                lat: _msg.lat,
+                links: _msg.links,
+                lng: _msg.lng,
+                loc: _msg.loc,
+                mediaKey: _msg.mediaKey,
+                mediaStage: _msg.mediaStage,
+                mentionedJidList: _msg.mentionedJidList,
+                orderId: _msg.orderId,
+                productId: _msg.productId,
+                quotedMsg: _msg.quotedMsg,
+                star: _msg.star,
+                t: _msg.t,
+                title: _msg.title,
+                to: _msg.to,
+                token: _msg.token,
+                type: _msg.type,
+                vcardList: _msg.vcardList
+            }
+        }, msgId)
+
+        return new Message(this, msg);
     }
 }
 
