@@ -18,10 +18,15 @@ export default class Whatsapp {
             }
             const chat = await Wpp.client.getChatById(message.from)
 
-            if (chat.isGroup) {
+            if(!chat) {
+                return;
+            }
+
+            if (chat?.isGroup) {
                 console.log('message from group')
                 return;
             }
+
             if (!message.fromMe) {
                 let suporte = await Suporte
                     .query()

@@ -1,4 +1,5 @@
 import { ApplicationContract } from '@ioc:Adonis/Core/Application'
+import Whatsapp from '@ioc:App/Whatsapp';
 import qrcode from 'qrcode-terminal'
 import { Events, Client as ClientWpp, Chat } from "whatsapp-web.js";
 import Client from './Client.js'
@@ -6,7 +7,7 @@ import Client from './Client.js'
 declare module 'puppeteer' {
     interface LaunchOptions {
         browserWSEndpoint?: string,
-        headless: boolean
+        headless?: boolean
     }
 }
 
@@ -21,20 +22,18 @@ export class WhatsappService {
     }
 
     async start() {
-
-        
         try {
-            const Redis = this.app.container.use('Adonis/Addons/Redis')
             const Event = this.app.container.use('Adonis/Core/Event')
-            const session = await Redis.get('whatsapp:session')
+            const Redis = this.app.container.use('Adonis/Addons/Redis')
+            // const session = await Redis.get('whatsapp:session')
             this.client = new Client({
                 puppeteer: {
                     headless: false,
-                    // browserWSEndpoint: 'ws://127.0.0.1:9222/devtools/browser/cd3986a4-2ffc-42df-9277-6f7c96b477b7'
+                    browserWSEndpoint: 'ws://127.0.0.1:9222/devtools/browser/8f82e68e-6106-4e71-b364-1160138dd8cb'
                 }
             })
 
-            this.client.on(Events.READY, ev => {
+            this.client.on(Events.READY, () => {
                 if (this.client.info.pushname) {
                     this.status = 'READY'
                     this.app.logger.info(`Whatsapp ready: ${this.client.info.wid.user} `)
@@ -51,9 +50,8 @@ export class WhatsappService {
                 qrcode.generate(qr, { small: true })
             })
 
-            
             this.client.on(Events.AUTHENTICATED, session => {
-                // Redis.set('whatsapp:session', JSON.stringify(session))
+                Redis.set('whatsapp:session', JSON.stringify(session))
             })
 
             this.client.on(Events.MESSAGE_RECEIVED, message => {
@@ -89,10 +87,13 @@ export class WhatsappService {
     }
 
     async getChat(id: string): Promise<Chat> {
+       
         if(this.client.info.pushname) {
             return this.client.getChatById(id)
         }   
         return {} as Chat
     }
+
+    
 
 }

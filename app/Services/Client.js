@@ -945,6 +945,10 @@ class Client extends EventEmitter {
 
         return Promise.all(chatIds.map(id => this.getChatById(id)));
     }
+
+    async getMessageById(msgId) {
+        
+    }
 }
 
 module.exports = Client;
