@@ -83,10 +83,11 @@ export default class SuportesController {
             return response.status(404).json({})
         }
         const chat = await Whatsapp.getChat(suporte?.chat_id)
+        const messages = await chat.fetchMessages({ limit: 50 })
 
         await chat.sendSeen()
 
-        return suporte
+        return {...suporte.serialize(), messages}
     }
 
     async getMessages(ctx: HttpContextContract) {
