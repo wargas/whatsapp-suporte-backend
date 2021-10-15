@@ -98,7 +98,7 @@ export default class SuportesController {
         const chat = await Whatsapp.client.getChatById(suporte.chat_id);
         await chat.sendSeen()
 
-        const messages = await chat.fetchMessages({ limit: 10 })
+        const messages = await chat.fetchMessages({ limit: 50 })
         return messages
     }
 

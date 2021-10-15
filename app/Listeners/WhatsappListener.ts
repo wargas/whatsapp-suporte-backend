@@ -4,7 +4,7 @@ import Suporte from 'App/Models/Suporte';
 import { DateTime } from 'luxon';
 import { Message } from 'whatsapp-web.js';
 
-export default class Whatsapp {
+export default class WhatsappListener {
     async onNewMessage(message: Message) {
 
         const contato = await Wpp.client.getContactById(message.from)
@@ -57,13 +57,9 @@ export default class Whatsapp {
             console.log('error', error)
             return;
         }
-
-
-
-
     }
 
-    async onSendMessage(message: Message) {
-        console.log(message)
+    async onAck(message) {
+        Socket.emit('ack', message)
     }
 }
