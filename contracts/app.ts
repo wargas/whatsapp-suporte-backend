@@ -1,6 +1,6 @@
 
 declare module '@ioc:App/Whatsapp' {
-    import { WhatsappService } from 'App/Services/Whatsapp';
+    import { WhatsappService } from 'App/Services/WhatsappService';
 
     const Whatsapp: WhatsappService;
     export default Whatsapp

@@ -1,5 +1,5 @@
 import { ApplicationContract } from '@ioc:Adonis/Core/Application'
-import { WhatsappService } from 'App/Services/Whatsapp'
+import { WhatsappService } from 'App/Services/WhatsappService'
 import { Server, Socket } from 'socket.io'
 
 export default class SocketProvider {

@@ -1,6 +1,6 @@
 import { ApplicationContract } from '@ioc:Adonis/Core/Application'
 import qrcode from 'qrcode-terminal'
-import { Events, Client as ClientWpp, Chat } from "whatsapp-web.js";
+import { Events, Client as ClientWpp, Chat, WAState } from "whatsapp-web.js";
 import Client from './Client.js'
 
 declare module 'puppeteer' {
@@ -34,7 +34,7 @@ export class WhatsappService {
             this.client = new Client({
                 // puppeteer: {
                 //     headless: false,
-                //     browserWSEndpoint: 'ws://localhost:9222/devtools/browser/c2b23f58-c853-4542-bf85-752ec79b1009'
+                //     browserWSEndpoint: 'ws://127.0.0.1:9222/devtools/browser/672204c7-2378-464b-afb8-ee660de84363'
                 // }
             })
 
@@ -59,6 +59,10 @@ export class WhatsappService {
                 Redis.set('whatsapp:session', JSON.stringify(session))
             })
 
+            this.client.on(Events.STATE_CHANGED, (state: WAState) => {
+                Redis.set('whatsapp:STATE_CHANGED', state)
+            })
+
             this.client.on(Events.MESSAGE_RECEIVED, message => {
                 Event.emit('whatsapp:MESSAGE_RECEIVED', message)
             })
@@ -67,8 +71,8 @@ export class WhatsappService {
                 Event.emit('whatsapp:MESSAGE_CREATE', message)
             })
 
-            this.client.on(Events.MESSAGE_ACK, message => {
-                Event.emit('whatsapp:MESSAGE_ACK', message)
+            this.client.on(Events.MESSAGE_ACK, ack => {
+                Event.emit('whatsapp:MESSAGE_ACK', ack)
             })
 
             this.client.initialize() 
