@@ -1,5 +1,4 @@
 import { ApplicationContract } from '@ioc:Adonis/Core/Application'
-import qrcode from 'qrcode-terminal'
 import { Events, Client as ClientWpp, Chat, WAState } from "whatsapp-web.js";
 import Client from './Client.js'
 
@@ -29,12 +28,12 @@ export class WhatsappService {
     async start() { 
         try {
             const Event = this.app.container.use('Adonis/Core/Event')
-            const Redis = this.app.container.use('Adonis/Addons/Redis')
-            // const session = await Redis.get('whatsapp:session') 
+            
             this.client = new Client({
-                // puppeteer: {
-                //     browserWSEndpoint: 'ws://127.0.0.1:9222/devtools/browser/472e1f25-df94-4625-abbe-de7ea279fc96'
-                // }
+                puppeteer: {
+                    headless: true,
+                    args: ['--no-sandbox']
+                }
             })
 
             this.client.on(Events.READY, (state) => {
