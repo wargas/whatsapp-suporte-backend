@@ -45,6 +45,12 @@ export default class WhatsappListener {
                         status: 'ABERTO',
                         openedAt: DateTime.local()
                     })
+                } else {
+                    await suporte.merge({
+                        name: contato.name,
+                        pushname: contato.pushname,
+                        image_url: imageUrl
+                    })
                 }
                 console.log(suporte.id)
             }

@@ -27,6 +27,7 @@ export default class SuportesController {
 
         const chats = await Whatsapp.getChats(ids)
 
+        
         const abertos = await Suporte.query()
             .where('status', 'ABERTO')
             .whereNull('user_id')
@@ -38,7 +39,8 @@ export default class SuportesController {
                     ...suporte.serialize(),
                     unreadCount: chat?.unreadCount || 0
                 }
-            }), fila: abertos.length
+            }), 
+            fila: abertos.length
         }
     }
 
@@ -104,16 +106,17 @@ export default class SuportesController {
         return messages
     }
 
-    async sendMessage(ctx: HttpContextContract) {
-        const { message } = ctx.request.all()
+    async sendMessage({params, request, auth}: HttpContextContract) {
+        const { message } = request.all()
 
-        const chat = await Suporte.find(ctx.params.id);
+        const chat = await Suporte.find(params.id);
 
         if (!chat) {
             return {}
         }
 
-        return await Whatsapp.client.sendMessage(chat.chat_id, message)
+        return await Whatsapp.client
+            .sendMessage(chat.chat_id, `*${auth.user?.name}:*\n${message}`)
     }
 
     async sendMedia({ request, params }: HttpContextContract) {

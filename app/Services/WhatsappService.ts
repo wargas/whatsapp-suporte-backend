@@ -33,34 +33,30 @@ export class WhatsappService {
             // const session = await Redis.get('whatsapp:session')
             this.client = new Client({
                 // puppeteer: {
-                //     headless: false,
-                //     browserWSEndpoint: 'ws://127.0.0.1:9222/devtools/browser/5ad36d04-f940-475d-b426-44c6948f347d'
+                //     browserWSEndpoint: 'ws://127.0.0.1:9222/devtools/browser/472e1f25-df94-4625-abbe-de7ea279fc96'
                 // }
             })
 
-            this.client.on(Events.READY, () => {
+            this.client.on(Events.READY, (state) => {
+                Event.emit('whatsapp:READY', state)
                 if (this.client.info.pushname) {
                     this.status = 'READY'
                     this.app.logger.info(`Whatsapp ready: ${this.client.info.wid.user} `)
-
-                    const socket = this.app.container.use('App/Socket')
-
-                    socket.emit('status', this.status)
+                  
                 }
-
-
             })
 
             this.client.on(Events.QR_RECEIVED, qr => {  
-                qrcode.generate(qr, { small: true })
+                this.status = 'QRCODE'
+                Event.emit('whatsapp:QR_RECEIVED', qr)
             })
 
             this.client.on(Events.AUTHENTICATED, session => {
-                Redis.set('whatsapp:session', JSON.stringify(session))
+                Event.emit('whatsapp:AUTHENTICATED', session)
             })
 
             this.client.on(Events.STATE_CHANGED, (state: WAState) => {
-                Redis.set('whatsapp:STATE_CHANGED', state)
+                Event.emit('whatsapp:STATE_CHANGED', state)
             })
 
             this.client.on(Events.MESSAGE_RECEIVED, message => {

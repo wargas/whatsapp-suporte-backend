@@ -4,6 +4,7 @@ import Whatsapp from '@ioc:App/Whatsapp'
 
 export default class WhatsappMiddleware {
   public async handle (ctx: HttpContextContract, next: () => Promise<void>) {
+
     try {
       const info = await Whatsapp.client.info
 
