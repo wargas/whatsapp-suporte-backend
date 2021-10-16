@@ -51,6 +51,7 @@ export class WhatsappService {
             })
 
             this.client.on(Events.AUTHENTICATED, session => {
+                this.status = 'READY'
                 Event.emit('whatsapp:AUTHENTICATED', session)
             })
 
