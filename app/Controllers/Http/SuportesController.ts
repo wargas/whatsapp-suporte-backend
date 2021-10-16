@@ -6,6 +6,7 @@ import Whatsapp from '@ioc:App/Whatsapp';
 import Suporte from "App/Models/Suporte";
 import { DateTime } from 'luxon';
 import Application from '@ioc:Adonis/Core/Application'
+import { MessageMedia } from 'whatsapp-web.js';
 
 
 export default class SuportesController {
@@ -87,7 +88,7 @@ export default class SuportesController {
 
         await chat.sendSeen()
 
-        return {...suporte.serialize(), messages}
+        return { ...suporte.serialize(), messages }
     }
 
     async getMessages(ctx: HttpContextContract) {
@@ -115,6 +116,33 @@ export default class SuportesController {
         return await Whatsapp.client.sendMessage(chat.chat_id, message)
     }
 
+    async sendMedia({ request, params }: HttpContextContract) {
+        const chat = await Suporte.find(params.id);
+        if (!chat) {
+            return {}
+        }
+
+        
+        const filePath = request.file('file')?.tmpPath
+        const fileName = request.file('file')?.clientName
+
+        
+        const type = request.input('type')
+
+        
+        if (filePath) {
+            const _media = MessageMedia.fromFilePath(filePath)
+
+            const media = new MessageMedia(type, _media.data, fileName)
+            return await Whatsapp.client.sendMessage(
+                chat?.chat_id,
+                media
+            )
+        }
+
+        return []
+    }
+
     async status() {
         const status = Whatsapp.status;
 
@@ -128,7 +156,7 @@ export default class SuportesController {
 
         const fileUrl = path.join(uploadPath, message.id.id)
 
-        if (!await fs.existsSync(fileUrl)) {            
+        if (!await fs.existsSync(fileUrl)) {
             try {
                 const media = await message.downloadMedia();
                 await fs.writeFileSync(fileUrl, media.data, { encoding: 'base64' })
@@ -140,7 +168,7 @@ export default class SuportesController {
 
         }
 
-        
+
         const file = fs.createReadStream(fileUrl)
 
         response.stream(file, error => {

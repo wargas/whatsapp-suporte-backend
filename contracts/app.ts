@@ -1,4 +1,5 @@
 
+
 declare module '@ioc:App/Whatsapp' {
     import { WhatsappService } from 'App/Services/WhatsappService';
 
@@ -12,4 +13,11 @@ declare module '@ioc:App/Socket' {
     const Socket: Server
 
     export default Socket
+}
+
+declare module '@ioc:Adonis/Core/HttpContext' {
+    import { ClientInfo } from 'whatsapp-web.js';
+    interface HttpContextContract {
+        info: ClientInfo
+    }
 }

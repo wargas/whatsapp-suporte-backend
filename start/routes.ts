@@ -1,4 +1,3 @@
-import Socket from '@ioc:App/Socket'
 import Route from '@ioc:Adonis/Core/Route'
 
 Route.group(() => {
@@ -15,10 +14,11 @@ Route.group(() => {
   Route.get('/suportes/:id', 'SuportesController.show')
   Route.get('/suportes/:id/messages', 'SuportesController.getMessages')
   Route.post('/suportes/:id/send', 'SuportesController.sendMessage')
-}).prefix('api/v1').middleware('auth')
+  Route.post('/suportes/:id/media', 'SuportesController.sendMedia')
+}).prefix('api/v1').middleware('auth').middleware('whatsapp')
 
 Route.get('api/v1/media/:id', 'SuportesController.media')
-Route.get('/', async () => {
+Route.get('/', async ({info}) => {
 
-  return { suporte: 'v1' }
-})
+  return { info }
+}).middleware('whatsapp')

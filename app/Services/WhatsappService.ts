@@ -32,10 +32,10 @@ export class WhatsappService {
             const Redis = this.app.container.use('Adonis/Addons/Redis')
             // const session = await Redis.get('whatsapp:session')
             this.client = new Client({
-                puppeteer: {
-                    headless: false,
-                    browserWSEndpoint: 'ws://127.0.0.1:9222/devtools/browser/ec7cd080-3218-4fbf-adff-0bf8e04ed985'
-                }
+                // puppeteer: {
+                //     headless: false,
+                //     browserWSEndpoint: 'ws://127.0.0.1:9222/devtools/browser/5ad36d04-f940-475d-b426-44c6948f347d'
+                // }
             })
 
             this.client.on(Events.READY, () => {
