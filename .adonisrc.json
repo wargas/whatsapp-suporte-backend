@@ -1,5 +1,15 @@
 {
   "typescript": true,
+  "metaFiles": [
+    {
+      "pattern": "resources/media/.gitkeep",
+      "reloadServer": false
+    },
+    {
+      "pattern": ".env",
+      "reloadServer": false
+    }
+  ],
   "commands": [
     "./commands",
     "@adonisjs/core/build/commands/index.js",
