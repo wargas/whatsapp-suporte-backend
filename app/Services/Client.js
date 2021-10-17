@@ -349,7 +349,7 @@ class Client extends EventEmitter {
 
                 if (state === WAState.CONFLICT) {
                     setTimeout(() => {
-                        this.pupPage.evaluate(() => window.Store.AppState.takeover());
+                        this.pupPage?.evaluate(() => window.Store.AppState.takeover());
                     }, this.options.takeoverTimeoutMs);
                 }
             }
@@ -438,7 +438,7 @@ class Client extends EventEmitter {
      * Logs out the client, closing the current session
      */
     async logout() {
-        return await this.pupPage.evaluate(() => {
+        return await this.pupPage?.evaluate(() => {
             return window.Store.AppState.logout();
         });
     }
@@ -448,7 +448,7 @@ class Client extends EventEmitter {
      * @returns {Promise<string>}
      */
     async getWWebVersion() {
-        return await this.pupPage.evaluate(() => {
+        return await this.pupPage?.evaluate(() => {
             return window.Debug.VERSION;
         });
     }
@@ -460,7 +460,7 @@ class Client extends EventEmitter {
      * 
      */
     async sendSeen(chatId) {
-        const result = await this.pupPage.evaluate(async (chatId) => {
+        const result = await this.pupPage?.evaluate(async (chatId) => {
             return window.WWebJS.sendSeen(chatId);
 
         }, chatId);
@@ -537,7 +537,7 @@ class Client extends EventEmitter {
                 });
         }
 
-        const newMessage = await this.pupPage.evaluate(async (chatId, message, options, sendSeen) => {
+        const newMessage = await this.pupPage?.evaluate(async (chatId, message, options, sendSeen) => {
             const chatWid = window.Store.WidFactory.createWid(chatId);
             const chat = await window.Store.Chat.find(chatWid);
 
@@ -562,7 +562,7 @@ class Client extends EventEmitter {
      * @returns {Promise<Message[]>}
      */
     async searchMessages(query, options = {}) {
-        const messages = await this.pupPage.evaluate(async (query, page, count, remote) => {
+        const messages = await this.pupPage?.evaluate(async (query, page, count, remote) => {
             const { messages } = await window.Store.Msg.search(query, page, count, remote);
             return messages.map(msg => window.WWebJS.getMessageModel(msg));
         }, query, options.page, options.limit, options.chatId);
@@ -577,7 +577,7 @@ class Client extends EventEmitter {
     async getChats() {
         try {
 
-            let chats = await this.pupPage.evaluate(async () => {
+            let chats = await this.pupPage?.evaluate(async () => {
                 return await window.WWebJS.getChats();
             });
             
@@ -594,7 +594,7 @@ class Client extends EventEmitter {
      */
     async getChatById(chatId) {
         try {
-            let chat = await this.pupPage.evaluate(async chatId => {
+            let chat = await this.pupPage?.evaluate(async chatId => {
                 return await window.WWebJS.getChat(chatId);
             }, chatId);
 
@@ -609,7 +609,7 @@ class Client extends EventEmitter {
      * @returns {Promise<Array<Contact>>}
      */
     async getContacts() {
-        let contacts = await this.pupPage.evaluate(() => {
+        let contacts = await this.pupPage?.evaluate(() => {
             return window.WWebJS.getContacts();
         });
 
@@ -622,7 +622,7 @@ class Client extends EventEmitter {
      * @returns {Promise<Contact>}
      */
     async getContactById(contactId) {
-        let contact = await this.pupPage.evaluate(contactId => {
+        let contact = await this.pupPage?.evaluate(contactId => {
             return window.WWebJS.getContact(contactId);
         }, contactId);
 
@@ -635,7 +635,7 @@ class Client extends EventEmitter {
      * @returns {Promise<object>} Invite information
      */
     async getInviteInfo(inviteCode) {
-        return await this.pupPage.evaluate(inviteCode => {
+        return await this.pupPage?.evaluate(inviteCode => {
             return window.Store.Wap.groupInviteInfo(inviteCode);
         }, inviteCode);
     }
@@ -646,7 +646,7 @@ class Client extends EventEmitter {
      * @returns {Promise<string>} Id of the joined Chat
      */
     async acceptInvite(inviteCode) {
-        const chatId = await this.pupPage.evaluate(async inviteCode => {
+        const chatId = await this.pupPage?.evaluate(async inviteCode => {
             return await window.Store.Invite.sendJoinGroupViaInvite(inviteCode);
         }, inviteCode);
 
@@ -661,7 +661,7 @@ class Client extends EventEmitter {
     async acceptGroupV4Invite(inviteInfo) {
         if (!inviteInfo.inviteCode) throw 'Invalid invite code, try passing the message.inviteV4 object';
         if (inviteInfo.inviteCodeExp == 0) throw 'Expired invite code';
-        return await this.pupPage.evaluate(async inviteInfo => {
+        return await this.pupPage?.evaluate(async inviteInfo => {
             let { groupId, fromId, inviteCode, inviteCodeExp, toId } = inviteInfo;
             return await window.Store.Wap.acceptGroupV4Invite(groupId, fromId, inviteCode, String(inviteCodeExp), toId);
         }, inviteInfo);
@@ -672,7 +672,7 @@ class Client extends EventEmitter {
      * @param {string} status New status message
      */
     async setStatus(status) {
-        await this.pupPage.evaluate(async status => {
+        await this.pupPage?.evaluate(async status => {
             return await window.Store.Wap.sendSetStatus(status);
         }, status);
     }
@@ -683,7 +683,7 @@ class Client extends EventEmitter {
      * @param {string} displayName New display name
      */
     async setDisplayName(displayName) {
-        await this.pupPage.evaluate(async displayName => {
+        await this.pupPage?.evaluate(async displayName => {
             return await window.Store.Wap.setPushname(displayName);
         }, displayName);
     }
@@ -693,7 +693,7 @@ class Client extends EventEmitter {
      * @returns {WAState} 
      */
     async getState() {
-        return await this.pupPage.evaluate(() => {
+        return await this.pupPage?.evaluate(() => {
             return window.Store.AppState.state;
         });
     }
@@ -702,7 +702,7 @@ class Client extends EventEmitter {
      * Marks the client as online
      */
     async sendPresenceAvailable() {
-        return await this.pupPage.evaluate(() => {
+        return await this.pupPage?.evaluate(() => {
             return window.Store.Wap.sendPresenceAvailable();
         });
     }
@@ -712,7 +712,7 @@ class Client extends EventEmitter {
      * @returns {boolean}
      */
     async archiveChat(chatId) {
-        return await this.pupPage.evaluate(async chatId => {
+        return await this.pupPage?.evaluate(async chatId => {
             let chat = await window.Store.Chat.get(chatId);
             await window.Store.Cmd.archiveChat(chat, true);
             return chat.archive;
@@ -724,7 +724,7 @@ class Client extends EventEmitter {
      * @returns {boolean}
      */
     async unarchiveChat(chatId) {
-        return await this.pupPage.evaluate(async chatId => {
+        return await this.pupPage?.evaluate(async chatId => {
             let chat = await window.Store.Chat.get(chatId);
             await window.Store.Cmd.archiveChat(chat, false);
             return chat.archive;
@@ -736,7 +736,7 @@ class Client extends EventEmitter {
      * @returns {Promise<boolean>} New pin state. Could be false if the max number of pinned chats was reached.
      */
     async pinChat(chatId) {
-        return this.pupPage.evaluate(async chatId => {
+        return this.pupPage?.evaluate(async chatId => {
             let chat = window.Store.Chat.get(chatId);
             if (chat.pin) {
                 return true;
@@ -758,7 +758,7 @@ class Client extends EventEmitter {
      * @returns {Promise<boolean>} New pin state
      */
     async unpinChat(chatId) {
-        return this.pupPage.evaluate(async chatId => {
+        return this.pupPage?.evaluate(async chatId => {
             let chat = window.Store.Chat.get(chatId);
             if (!chat.pin) {
                 return false;
@@ -774,7 +774,7 @@ class Client extends EventEmitter {
      * @param {Date} unmuteDate Date when the chat will be unmuted
      */
     async muteChat(chatId, unmuteDate) {
-        await this.pupPage.evaluate(async (chatId, timestamp) => {
+        await this.pupPage?.evaluate(async (chatId, timestamp) => {
             let chat = await window.Store.Chat.get(chatId);
             await chat.mute.mute(timestamp, !0);
         }, chatId, unmuteDate.getTime() / 1000);
@@ -785,7 +785,7 @@ class Client extends EventEmitter {
      * @param {string} chatId ID of the chat that will be unmuted
      */
     async unmuteChat(chatId) {
-        await this.pupPage.evaluate(async chatId => {
+        await this.pupPage?.evaluate(async chatId => {
             let chat = await window.Store.Chat.get(chatId);
             await window.Store.Cmd.muteChat(chat, false);
         }, chatId);
@@ -796,7 +796,7 @@ class Client extends EventEmitter {
      * @param {string} chatId ID of the chat that will be marked as unread
      */
     async markChatUnread(chatId) {
-        await this.pupPage.evaluate(async chatId => {
+        await this.pupPage?.evaluate(async chatId => {
             let chat = await window.Store.Chat.get(chatId);
             await window.Store.Cmd.markChatUnread(chat, true);
         }, chatId);
@@ -808,7 +808,7 @@ class Client extends EventEmitter {
      * @returns {Promise<string>}
      */
     async getProfilePicUrl(contactId) {
-        const profilePic = await this.pupPage.evaluate((contactId) => {
+        const profilePic = await this.pupPage?.evaluate((contactId) => {
             return window.Store.Wap.profilePicFind(contactId);
         }, contactId);
 
@@ -819,7 +819,7 @@ class Client extends EventEmitter {
      * Force reset of connection state for the client
     */
     async resetState() {
-        await this.pupPage.evaluate(() => {
+        await this.pupPage?.evaluate(() => {
             window.Store.AppState.phoneWatchdog.shiftTimer.forceRunNow();
         });
     }
@@ -830,7 +830,7 @@ class Client extends EventEmitter {
      * @returns {Promise<Boolean>}
      */
     async isRegisteredUser(id) {
-        return await this.pupPage.evaluate(async (id) => {
+        return await this.pupPage?.evaluate(async (id) => {
             let result = await window.Store.Wap.queryExist(id);
             return result.jid !== undefined;
         }, id);
@@ -848,7 +848,7 @@ class Client extends EventEmitter {
         }
 
         try {
-            return await this.pupPage.evaluate(async numberId => {
+            return await this.pupPage?.evaluate(async numberId => {
                 return window.WWebJS.getNumberId(numberId);
             }, number);
         } catch (_) {
@@ -873,9 +873,9 @@ class Client extends EventEmitter {
             participants = participants.map(c => c.id._serialized);
         }
 
-        const createRes = await this.pupPage.evaluate(async (name, participantIds) => {
+        const createRes = await this.pupPage?.evaluate(async (name, participantIds) => {
             const res = await window.Store.Wap.createGroup(name, participantIds);
-            console.log(res);
+            
             if (!res.status === 200) {
                 throw 'An error occurred while creating the group!';
             }
@@ -898,7 +898,7 @@ class Client extends EventEmitter {
      * @returns {Promise<Array<Label>>}
      */
     async getLabels() {
-        const labels = await this.pupPage.evaluate(async () => {
+        const labels = await this.pupPage?.evaluate(async () => {
             return window.WWebJS.getLabels();
         });
 
@@ -911,7 +911,7 @@ class Client extends EventEmitter {
      * @returns {Promise<Label>}
      */
     async getLabelById(labelId) {
-        const label = await this.pupPage.evaluate(async (labelId) => {
+        const label = await this.pupPage?.evaluate(async (labelId) => {
             return window.WWebJS.getLabel(labelId);
         }, labelId);
 
@@ -924,7 +924,7 @@ class Client extends EventEmitter {
      * @returns {Promise<Array<Label>>}
      */
     async getChatLabels(chatId) {
-        const labels = await this.pupPage.evaluate(async (chatId) => {
+        const labels = await this.pupPage?.evaluate(async (chatId) => {
             return window.WWebJS.getChatLabels(chatId);
         }, chatId);
 
@@ -937,7 +937,7 @@ class Client extends EventEmitter {
      * @returns {Promise<Array<Chat>>}
      */
     async getChatsByLabelId(labelId) {
-        const chatIds = await this.pupPage.evaluate(async (labelId) => {
+        const chatIds = await this.pupPage?.evaluate(async (labelId) => {
             const label = window.Store.Label.get(labelId);
             const labelItems = label.labelItemCollection.models;
             return labelItems.reduce((result, item) => {
@@ -953,7 +953,7 @@ class Client extends EventEmitter {
 
     async getMessageById(msgId) {
 
-        const msg = await this.pupPage.evaluate(async (msgId) => {
+        const msg = await this.pupPage?.evaluate(async (msgId) => {
 
             const _msg = await window.Store.Msg.get(msgId)
 

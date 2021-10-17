@@ -1,5 +1,6 @@
 import Socket from '@ioc:App/Socket';
 import Wpp from '@ioc:App/Whatsapp'
+import Logger from '@ioc:Adonis/Core/Logger'
 import Suporte from 'App/Models/Suporte';
 import { DateTime } from 'luxon';
 import { Message } from 'whatsapp-web.js';
@@ -12,18 +13,17 @@ export default class WhatsappListener {
 
         try {
 
-            if (message.id._serialized === 'status@broadcast') {
-                console.log('message from status')
+            if (message.isStatus) {
                 return;
             }
+
             const chat = await Wpp.client.getChatById(message.from)
 
-            if(!chat) {
+            if (!chat) {
                 return;
             }
 
-            if (chat?.isGroup) {
-                console.log('message from group')
+            if (chat.isGroup) {
                 return;
             }
 
@@ -33,7 +33,7 @@ export default class WhatsappListener {
                     .where('chat_id', message.from)
                     .where('status', 'ABERTO')
                     .first()
-               
+
 
                 if (!suporte) {
                     suporte = await Suporte.create({
@@ -52,15 +52,13 @@ export default class WhatsappListener {
                         image_url: imageUrl
                     })
                 }
-                console.log(suporte.id)
             }
 
             Socket.emit('message', { ...message, chat })
 
 
         } catch (error) {
-
-            console.log('error', error)
+            Logger.error(error)
             return;
         }
     }

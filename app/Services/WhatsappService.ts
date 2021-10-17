@@ -26,16 +26,19 @@ export class WhatsappService {
     }
 
     async start() { 
+        
         try {
             const Event = this.app.container.use('Adonis/Core/Event')
             
             this.client = new Client({
                 puppeteer: {
-                    headless: true,
+                    browserWSEndpoint: 'ws://127.0.0.1:9222/devtools/browser/16a680ef-6828-4d72-96eb-30e2dce343b8',
+                    headless: false,
                     args: ['--no-sandbox']
                 }
             })
 
+                       
             this.client.on(Events.READY, (state) => {
                 Event.emit('whatsapp:READY', state)
                 if (this.client.info.pushname) {
@@ -71,9 +74,10 @@ export class WhatsappService {
                 Event.emit('whatsapp:MESSAGE_ACK', ack)
             })
 
-            this.client.initialize() 
+            this.client.initialize()  
+
         } catch (err) {
-            this.app.logger.error('Erro no Whatsapp')
+            this.app.logger.error('Erro no Whatsapp', err)
         }     
     }
 

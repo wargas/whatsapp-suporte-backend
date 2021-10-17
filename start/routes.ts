@@ -4,7 +4,7 @@ Route.group(() => {
   Route.post('login', 'AuthController.login')
   Route.get('me', 'AuthController.currentUser').middleware('auth')
 }).prefix('api/v1/auth')
-
+ 
 Route.group(() => {
   Route.get('/suportes', 'SuportesController.index').middleware('whatsapp')
   Route.get('/suportes/user', 'SuportesController.userSuportes').middleware('whatsapp')
@@ -15,6 +15,10 @@ Route.group(() => {
   Route.get('/suportes/:id/messages', 'SuportesController.getMessages').middleware('whatsapp')
   Route.post('/suportes/:id/send', 'SuportesController.sendMessage').middleware('whatsapp')
   Route.post('/suportes/:id/media', 'SuportesController.sendMedia').middleware('whatsapp')
+
+  Route.get('/whatsapp/contacts', 'WhatsappsController.getContacts')
+  Route.get('/whatsapp/chats', 'WhatsappsController.getChats')
+  
 }).prefix('api/v1').middleware('auth')
 
 Route.get('api/v1/media/:id', 'SuportesController.media')

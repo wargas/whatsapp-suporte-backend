@@ -13,7 +13,6 @@ export default class SuportesController {
 
     async index() {
         return await Suporte.query()
-        // .where('status', 'ABERTO')
     }
 
     async userSuportes({ auth }: HttpContextContract) {
@@ -27,7 +26,6 @@ export default class SuportesController {
 
         const chats = await Whatsapp.getChats(ids)
 
-        
         const abertos = await Suporte.query()
             .where('status', 'ABERTO')
             .whereNull('user_id')
@@ -37,9 +35,10 @@ export default class SuportesController {
                 const chat = chats.find(chat => chat.id._serialized === suporte.chat_id)
                 return {
                     ...suporte.serialize(),
-                    unreadCount: chat?.unreadCount || 0
+                    unreadCount: chat?.unreadCount || 0,
+                    timestamp: chat?.timestamp
                 }
-            }), 
+            }),
             fila: abertos.length
         }
     }
@@ -106,7 +105,7 @@ export default class SuportesController {
         return messages
     }
 
-    async sendMessage({params, request, auth}: HttpContextContract) {
+    async sendMessage({ params, request, auth }: HttpContextContract) {
         const { message } = request.all()
 
         const chat = await Suporte.find(params.id);
@@ -125,14 +124,14 @@ export default class SuportesController {
             return {}
         }
 
-        
+
         const filePath = request.file('file')?.tmpPath
         const fileName = request.file('file')?.clientName
 
-        
+
         const type = request.input('type')
 
-        
+
         if (filePath) {
             const _media = MessageMedia.fromFilePath(filePath)
 
@@ -152,7 +151,7 @@ export default class SuportesController {
         return { status }
     }
 
-    async media({ params, response }: HttpContextContract) {
+    async media({ params, response, logger }: HttpContextContract) {
         const uploadPath = Application.resourcesPath('media')
 
         const message = await Whatsapp.client.getMessageById(params.id)
@@ -163,19 +162,15 @@ export default class SuportesController {
             try {
                 const media = await message.downloadMedia();
                 await fs.writeFileSync(fileUrl, media.data, { encoding: 'base64' })
-                console.log('Criar a imagem')
-
             } catch (error) {
                 return error;
             }
-
         }
-
 
         const file = fs.createReadStream(fileUrl)
 
         response.stream(file, error => {
-            console.log(error)
+            logger.error(error.message)
         })
 
     }
