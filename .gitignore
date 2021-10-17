@@ -7,3 +7,5 @@ coverage
 tmp
 resources/media/*
 !resources/media/.gitkeep
+public/*
+!public/.gitkeep

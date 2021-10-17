@@ -8,6 +8,10 @@
     {
       "pattern": ".env",
       "reloadServer": false
+    },
+    {
+      "pattern": "public/**",
+      "reloadServer": false
     }
   ],
   "commands": [
