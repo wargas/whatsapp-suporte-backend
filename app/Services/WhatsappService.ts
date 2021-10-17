@@ -1,5 +1,5 @@
 import { ApplicationContract } from '@ioc:Adonis/Core/Application'
-import { Events, Client, Chat, WAState } from "whatsapp-web.js";
+import { Events, Client, Chat, WAState } from "whatsapp-web";
 
 
 declare module 'puppeteer' {
@@ -10,7 +10,7 @@ declare module 'puppeteer' {
     }
 }
  
-declare module 'whatsapp-web.js' {   
+declare module 'whatsapp-web' {   
     interface Client { 
         getMessageById(messageId: string): Promise<any>
     }
@@ -27,23 +27,29 @@ export class WhatsappService {
     }
 
     async start() { 
+
+        let config:any = {
+            puppeteer: {
+                headless: process.env.headless || true,
+                args: ['--no-sandbox'],
+            }
+        }
+
+        if(process.env.browserWSEndpoint) {
+            config.puppeteer.browserWSEndpoint = process.env.browserWSEndpoint
+        }
         
         try {
             const Event = this.app.container.use('Adonis/Core/Event')
             
-            this.client = new Client({
-                puppeteer: {
-                    headless: true,
-                    args: ['--no-sandbox'],
-                }
-            })
+            this.client = new Client(config)
 
                        
             this.client.on(Events.READY, (state) => {
                 Event.emit('whatsapp:READY', state)
                 if (this.client.info.pushname) {
                     this.status = 'READY'
-                    this.app.logger.info(`Whatsapp ready: ${this.client.info.wid.user} `)
+                    this.app.logger.info(`Whatsapp ready`)
                   
                 }
             })
@@ -72,6 +78,10 @@ export class WhatsappService {
 
             this.client.on(Events.MESSAGE_ACK, ack => {
                 Event.emit('whatsapp:MESSAGE_ACK', ack)
+            })
+
+            this.client.on(Events.DISCONNECTED, () => {
+                this.client = new Client(config)
             })
 
             this.client.initialize()  

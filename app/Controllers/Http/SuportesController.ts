@@ -6,7 +6,7 @@ import Whatsapp from '@ioc:App/Whatsapp';
 import Suporte from "App/Models/Suporte";
 import { DateTime } from 'luxon';
 import Application from '@ioc:Adonis/Core/Application'
-import { MessageMedia } from 'whatsapp-web.js';
+import { MessageMedia } from 'whatsapp-web';
 
 
 export default class SuportesController {
@@ -44,14 +44,21 @@ export default class SuportesController {
         }
     }
 
-    async finalizarSuporte({ params, auth }: HttpContextContract) {
+    async finalizarSuporte({ params, request, auth }: HttpContextContract) {
         const suporte = await Suporte.query()
             .where('id', params.id)
             .where('user_id', auth?.user?.id || 0)
             .first()
+        const { message = null } = request.all()
 
         if (!suporte) {
             return { error: 'NOT_FOUND' }
+        }
+
+
+        if (message) {
+            await Whatsapp.client
+                .sendMessage(suporte.chat_id, `*${auth.user?.name}:*\n${message}`)
         }
 
         suporte.status = 'FECHADO'

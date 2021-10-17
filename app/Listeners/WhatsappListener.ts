@@ -3,7 +3,7 @@ import Wpp from '@ioc:App/Whatsapp'
 import Logger from '@ioc:Adonis/Core/Logger'
 import Suporte from 'App/Models/Suporte';
 import { DateTime } from 'luxon';
-import { Message } from 'whatsapp-web.js';
+import { Message } from 'whatsapp-web';
 import Whatsapp from '@ioc:App/Whatsapp';
 
 export default class WhatsappListener {

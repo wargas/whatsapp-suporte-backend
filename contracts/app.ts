@@ -16,7 +16,7 @@ declare module '@ioc:App/Socket' {
 }
 
 declare module '@ioc:Adonis/Core/HttpContext' {
-    import { ClientInfo } from 'whatsapp-web.js';
+    import { ClientInfo } from 'whatsapp-web';
     interface HttpContextContract {
         info: ClientInfo
     }
