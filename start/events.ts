@@ -11,3 +11,5 @@ Event.on('whatsapp:QR_RECEIVED', qr => {
 Event.on('whatsapp:AUTHENTICATED', session => {
     Socket.emit('auth', session)
 })
+
+Event.on('whatsapp:READY', 'WhatsappListener.onReady')

@@ -34,7 +34,8 @@ export class WhatsappService {
             this.client = new Client({
                 puppeteer: {
                     headless: false,
-                    args: ['--no-sandbox']
+                    args: ['--no-sandbox'],
+                    browserWSEndpoint: 'ws://localhost:9222/devtools/browser/b3776a01-8019-40b1-a2ed-571b45f6c66c'
                 }
             })
 

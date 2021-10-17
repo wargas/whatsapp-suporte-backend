@@ -20,6 +20,7 @@ export default class SuportesController {
         const suportes = await Suporte.query()
             .where('status', 'ABERTO')
             .where('user_id', auth?.user?.id || 0)
+            .orderBy('updated_at', 'desc')
 
 
         const ids = suportes.map(item => item.chat_id)

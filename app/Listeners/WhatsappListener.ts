@@ -4,55 +4,45 @@ import Logger from '@ioc:Adonis/Core/Logger'
 import Suporte from 'App/Models/Suporte';
 import { DateTime } from 'luxon';
 import { Message } from 'whatsapp-web.js';
+import Whatsapp from '@ioc:App/Whatsapp';
 
 export default class WhatsappListener {
     async onNewMessage(message: Message) {
 
-        const contato = await Wpp.client.getContactById(message.from)
-        const imageUrl = await contato.getProfilePicUrl()
+        if (message.isStatus) {
+            return;
+        }
 
         try {
 
-            if (message.isStatus) {
-                return;
-            }
-
             const chat = await Wpp.client.getChatById(message.from)
+            const contato = await chat.getContact()
+            const imageUrl = await contato.getProfilePicUrl()
 
-            if (!chat) {
+            if (message.fromMe) {
+                Socket.emit('message', { ...message, chat })
+
                 return;
             }
 
-            if (chat.isGroup) {
+
+
+            if (!chat || chat.isGroup) {
                 return;
             }
 
-            if (!message.fromMe) {
-                let suporte = await Suporte
-                    .query()
-                    .where('chat_id', message.from)
-                    .where('status', 'ABERTO')
-                    .first()
+            let suporte = new Suporte()
 
+            suporte.name = contato.name || ''
+            suporte.pushname = contato.pushname || ''
+            suporte.image_url = imageUrl
+            suporte.chat_id = chat.id._serialized
+            suporte.contact_id = contato.id._serialized
+            suporte.status = 'ABERTO'
+            suporte.openedAt = DateTime.local()
 
-                if (!suporte) {
-                    suporte = await Suporte.create({
-                        name: contato.name,
-                        pushname: contato.pushname,
-                        image_url: imageUrl,
-                        chat_id: message.from,
-                        contact_id: contato.id._serialized,
-                        status: 'ABERTO',
-                        openedAt: DateTime.local()
-                    })
-                } else {
-                    await suporte.merge({
-                        name: contato.name,
-                        pushname: contato.pushname,
-                        image_url: imageUrl
-                    })
-                }
-            }
+            await this.createOrUpdateSuporte(suporte)
+
 
             Socket.emit('message', { ...message, chat })
 
@@ -65,5 +55,50 @@ export default class WhatsappListener {
 
     async onAck(message) {
         Socket.emit('ack', message)
+    }
+
+
+    async onReady() {
+        const chats = await Whatsapp.getChats()
+        const unreads = chats.filter(chat => !chat.isGroup && chat.unreadCount > 0)
+
+        for await (let chat of unreads) {
+            const suporte = new Suporte()
+            const contact = await chat.getContact()
+            const imageUrl = await contact.getProfilePicUrl()
+
+            suporte.name = contact.name || ''
+            suporte.pushname = contact.pushname
+            suporte.image_url = imageUrl
+            suporte.chat_id = chat.id._serialized
+            suporte.contact_id = contact.id._serialized
+            suporte.status = 'ABERTO'
+            suporte.openedAt = DateTime.local()
+
+            await this.createOrUpdateSuporte(suporte)
+        }
+    }
+
+    async createOrUpdateSuporte(item: Suporte): Promise<Suporte> {
+
+        Logger.info('Criando Suporte')
+        let suporte = await Suporte
+            .query()
+            .where('chat_id', item.chat_id)
+            .where('status', 'ABERTO')
+            .first()
+
+
+        if (!suporte) {
+            suporte = await Suporte.create(item)
+        } else {
+            await suporte.merge({
+                name: item.name,
+                pushname: item.pushname,
+                image_url: item.image_url
+            })
+        }
+
+        return suporte
     }
 }
