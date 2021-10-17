@@ -1,11 +1,12 @@
 import { ApplicationContract } from '@ioc:Adonis/Core/Application'
-import { Events, Client as ClientWpp, Chat, WAState } from "whatsapp-web.js";
-import Client from './Client.js'
+import { Events, Client, Chat, WAState } from "whatsapp-web.js";
+
 
 declare module 'puppeteer' {
     interface LaunchOptions {
         browserWSEndpoint?: string,
-        headless?: boolean
+        headless?: boolean,
+        args: string[]
     }
 }
  
@@ -17,7 +18,7 @@ declare module 'whatsapp-web.js' {
 
 export class WhatsappService {
 
-    public client: ClientWpp;
+    public client: Client;
     public status: string;
     
 
@@ -32,7 +33,6 @@ export class WhatsappService {
             
             this.client = new Client({
                 puppeteer: {
-                    browserWSEndpoint: 'ws://127.0.0.1:9222/devtools/browser/16a680ef-6828-4d72-96eb-30e2dce343b8',
                     headless: false,
                     args: ['--no-sandbox']
                 }

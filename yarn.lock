@@ -4252,10 +4252,9 @@ webpack-merge@^4.2.2:
   dependencies:
     lodash "^4.17.15"
 
-whatsapp-web.js@^1.14.1:
+"whatsapp-web.js@https://github.com/wargas/whatsapp-web.js.git":
   version "1.14.1"
-  resolved "https://registry.yarnpkg.com/whatsapp-web.js/-/whatsapp-web.js-1.14.1.tgz#9323aeaf0d1735252662005443e6e5708718e724"
-  integrity sha512-afPUh4kzTsnHKCx/+boz4hHyFh6Jkw2X7QGpMNDlqEZzkpCoLcLdJZT77YKemxBermOsx/4aYqK4nsfSUGfA9g==
+  resolved "https://github.com/wargas/whatsapp-web.js.git#df3fd530e5ffb182500262d7dd7cff62b114a366"
   dependencies:
     "@pedroslopez/moduleraid" "^5.0.2"
     fluent-ffmpeg "^2.1.2"
