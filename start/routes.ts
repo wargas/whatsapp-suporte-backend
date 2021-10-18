@@ -11,6 +11,7 @@ Route.group(() => {
   Route.get('/suportes/next', 'SuportesController.getNextSuporte').middleware('whatsapp')
   Route.get('/suportes/status', 'SuportesController.status')
   Route.post('/suportes/:id/finalizar', 'SuportesController.finalizarSuporte').middleware('whatsapp')
+  Route.get('/suportes/:id/novo', 'SuportesController.novoSuporte').middleware('whatsapp')
   Route.get('/suportes/:id', 'SuportesController.show').middleware('whatsapp')
   Route.get('/suportes/:id/messages', 'SuportesController.getMessages').middleware('whatsapp')
   Route.post('/suportes/:id/send', 'SuportesController.sendMessage').middleware('whatsapp')

@@ -15,6 +15,27 @@ export default class SuportesController {
         return await Suporte.query()
     }
 
+    async novoSuporte({params, auth}: HttpContextContract) {
+        const contato_id = params.id;
+
+        const contato = await Whatsapp.client.getContactById(contato_id)
+
+        const chat = await contato.getChat()
+
+        const imgUrl = await contato.getProfilePicUrl()
+
+        const suporte = await Suporte.create({
+            name: contato.name || contato.pushname,
+            chat_id: chat.id._serialized,
+            image_url: imgUrl,
+            openedAt: DateTime.local(),
+            user_id: auth.user?.id || 0,
+            status: 'ABERTO'
+        })
+
+        return suporte;
+    }
+
     async userSuportes({ auth }: HttpContextContract) {
 
         const suportes = await Suporte.query()
