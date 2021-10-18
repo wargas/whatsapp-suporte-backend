@@ -52,6 +52,8 @@ export default class SuportesController {
             .where('status', 'ABERTO')
             .whereNull('user_id')
 
+        
+
         return {
             suportes: suportes.map(suporte => {
                 const chat = chats.find(chat => chat.id._serialized === suporte.chat_id)

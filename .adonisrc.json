@@ -35,6 +35,14 @@
       "environment": [
         "web"
       ]
+    },
+    {
+      "file": "./start/rabbit",
+      "environment": [
+        "console",
+        "repl",
+        "web"
+      ]
     }
   ],
   "providers": [
@@ -44,7 +52,8 @@
     "@adonisjs/auth",
     "@adonisjs/redis",
     "./providers/SocketProvider",
-    "./providers/WhatsappProvider"
+    "./providers/WhatsappProvider",
+    "./providers/RabbitProvider"
   ],
   "aceProviders": [
     "@adonisjs/repl"

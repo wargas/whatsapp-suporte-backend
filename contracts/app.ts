@@ -21,3 +21,11 @@ declare module '@ioc:Adonis/Core/HttpContext' {
         info: ClientInfo
     }
 }
+
+declare module '@ioc:App/Rabbit' {
+    import { RabbitService } from 'App/Services/RabbitService';
+
+    const Rabbit: RabbitService
+    
+    export default Rabbit
+}
