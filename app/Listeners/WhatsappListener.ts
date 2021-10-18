@@ -1,5 +1,4 @@
 import Socket from '@ioc:App/Socket';
-import Logger from '@ioc:Adonis/Core/Logger'
 import Suporte from 'App/Models/Suporte';
 import { DateTime } from 'luxon';
 import { Message } from 'whatsapp-web';
