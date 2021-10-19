@@ -44,9 +44,9 @@ export default class SuportesController {
             .orderBy('updated_at', 'desc')
 
 
-        const ids = suportes.map(item => item.chat_id)
+        // const ids = suportes.map(item => item.chat_id)
 
-        const chats = await Whatsapp.getChats(ids)
+        // const chats = await Whatsapp.getChats(ids)
 
         const abertos = await Suporte.query()
             .where('status', 'ABERTO')
@@ -56,11 +56,11 @@ export default class SuportesController {
 
         return {
             suportes: suportes.map(suporte => {
-                const chat = chats.find(chat => chat.id._serialized === suporte.chat_id)
+                // const chat = chats.find(chat => chat.id._serialized === suporte.chat_id)
                 return {
                     ...suporte.serialize(),
-                    unreadCount: chat?.unreadCount || 0,
-                    timestamp: chat?.timestamp
+                    unreadCount: 1,
+                    timestamp: 0
                 }
             }),
             fila: abertos.length
