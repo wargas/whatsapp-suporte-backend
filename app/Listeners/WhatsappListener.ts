@@ -8,7 +8,7 @@ import Rabbit from '@ioc:App/Rabbit';
 export default class WhatsappListener {
     async onNewMessage(message: Message) {
 
-        Rabbit.channel.sendToQueue('new-message', Buffer.from(JSON.stringify(message)))
+        Rabbit.channel.sendToQueue('new-message', Buffer.from(JSON.stringify(message), 'utf-8'))
 
     }
 
@@ -35,7 +35,7 @@ export default class WhatsappListener {
             suporte.status = 'ABERTO'
             suporte.openedAt = DateTime.local()
 
-            Rabbit.channel.sendToQueue('insert-suporte', Buffer.from(JSON.stringify(suporte)))
+            Rabbit.channel.sendToQueue('insert-suporte', Buffer.from(JSON.stringify(suporte), 'utf-8'))
            
         }
         console.timeEnd('queue-chats')

@@ -14,9 +14,11 @@ export class RabbitService {
     async start() {
         try {
             this.connection = await connect({
+                vhost: Env.get('AMQP_VHOST', '/'),
                 hostname: Env.get('AMQP_HOST'),
                 username: Env.get('AMQP_USER'),
                 password: Env.get('AMQP_PASSWORD')
+                
             })
 
             this.channel = await this.connection.createChannel()
