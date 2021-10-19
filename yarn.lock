@@ -4421,10 +4421,10 @@ webpack-merge@^4.2.2:
   dependencies:
     lodash "^4.17.15"
 
-whatsapp-web@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/whatsapp-web/-/whatsapp-web-1.0.0.tgz#190e37379fd80589eb1575d63654702744065482"
-  integrity sha512-Lk4dfVJ/7bhbZU/7+PiGfswHbviRcoWVfHQ53j4nXuuRdS6PVNzYmklQN6Xn+ajTF7hBmnu0ATSmeckVmuB3Xw==
+whatsapp-web@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/whatsapp-web/-/whatsapp-web-1.0.1.tgz#9d06e99d9577e436a4f7008a21a4c60d7a1b41a2"
+  integrity sha512-UhoNbuuXrIW/KCQiK6XjA3O/uMWwJl1Jw+2AZvnUjMyxzcm4Ia0Oz0ucV/sHWSAv2dECSwhGmyR0oJUfYBByUw==
   dependencies:
     "@pedroslopez/moduleraid" "^5.0.2"
     fluent-ffmpeg "^2.1.2"

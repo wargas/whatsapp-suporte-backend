@@ -35,6 +35,7 @@ export class RabbitService {
        await this.channel.assertQueue('new-message')
        await this.channel.assertQueue('new-ack')
        await this.channel.assertQueue('insert-suporte')
+       await this.channel.assertQueue('update-count-fila')
     }
 
 }

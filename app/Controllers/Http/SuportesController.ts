@@ -7,6 +7,9 @@ import Suporte from "App/Models/Suporte";
 import { DateTime } from 'luxon';
 import Application from '@ioc:Adonis/Core/Application'
 import { MessageMedia } from 'whatsapp-web';
+import User from 'App/Models/User';
+import Redis from '@ioc:Adonis/Addons/Redis';
+import Rabbit from '@ioc:App/Rabbit';
 
 
 export default class SuportesController {
@@ -48,11 +51,7 @@ export default class SuportesController {
 
         // const chats = await Whatsapp.getChats(ids)
 
-        const abertos = await Suporte.query()
-            .where('status', 'ABERTO')
-            .whereNull('user_id')
-
-        
+        const abertos = await Redis.get('count-fila') || '0'             
 
         return {
             suportes: suportes.map(suporte => {
@@ -63,7 +62,7 @@ export default class SuportesController {
                     timestamp: 0
                 }
             }),
-            fila: abertos.length
+            fila: parseInt(abertos) || 0
         }
     }
 
@@ -78,15 +77,18 @@ export default class SuportesController {
             return { error: 'NOT_FOUND' }
         }
 
+        const user = await User.findOrFail(auth.user?.id)
 
         if (message) {
             await Whatsapp.client
-                .sendMessage(suporte.chat_id, `*${auth.user?.name}:*\n${message}`)
+                .sendMessage(suporte.chat_id, `*${user.name}:*\n${message}`)
         }
 
         suporte.status = 'FECHADO'
         suporte.closedAt = DateTime.local()
         await suporte.save()
+
+        await Rabbit.channel.sendToQueue('update-count-fila', Buffer.from(''))
 
         return suporte
 
@@ -105,6 +107,8 @@ export default class SuportesController {
 
         next.user_id = auth.user?.id || 0
         await next.save()
+
+        await Rabbit.channel.sendToQueue('update-count-fila', Buffer.from(''))
 
         return next;
 
@@ -139,6 +143,8 @@ export default class SuportesController {
     async sendMessage({ params, request, auth }: HttpContextContract) {
         const { message } = request.all()
 
+        const user = await User.findOrFail(auth.user?.id)
+
         const chat = await Suporte.find(params.id);
 
         if (!chat) {
@@ -146,7 +152,7 @@ export default class SuportesController {
         }
 
         return await Whatsapp.client
-            .sendMessage(chat.chat_id, `*${auth.user?.name}:*\n${message}`)
+            .sendMessage(chat.chat_id, `*${user?.name}:*\n${message}`)
     }
 
     async sendMedia({ request, params }: HttpContextContract) {

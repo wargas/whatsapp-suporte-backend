@@ -35,6 +35,6 @@
     "reflect-metadata": "^0.1.13",
     "socket.io": "^4.2.0",
     "source-map-support": "^0.5.20",
-    "whatsapp-web": "^1.0.0"
+    "whatsapp-web": "^1.0.1"
   }
 }

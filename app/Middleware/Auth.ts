@@ -77,7 +77,9 @@ export default class AuthMiddleware {
     try {
       const id = await jwt.verify(token, Env.get('APP_KEY'))
 
-      const user = await User.find(id)
+      const user = await new User()
+      user.id = Number(id)
+      
       if(!user) {
         response.status(401).json({ error: 'UNAUTHORIZED' })
         return;

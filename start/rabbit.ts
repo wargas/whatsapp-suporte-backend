@@ -6,6 +6,7 @@ import Suporte from "App/Models/Suporte";
 import { DateTime } from "luxon";
 import { Message } from "whatsapp-web";
 import Logger from '@ioc:Adonis/Core/Logger'
+import Redis from "@ioc:Adonis/Addons/Redis";
 
 /*
 |--------------------------------------------------------------------------
@@ -82,10 +83,24 @@ Rabbit.channel.consume('insert-suporte', async (msg: ConsumeMessage) => {
     }
 })
 
+Rabbit.channel.consume('update-count-fila', async(msg: ConsumeMessage) => {
+
+    const abertos = await Suporte.query()
+    .where('status', 'ABERTO')
+    .whereNull('user_id')
+
+    console.log('update-count-fila', abertos.length)
+
+    await Socket.emit('count_fila', abertos.length)
+    await Redis.set('count-fila', abertos.length)
+
+    await Rabbit.channel.ack(msg)
+})
+
 const createOrUpdateSuporte = async (item: Suporte): Promise<Suporte> => {
 
-    item.pushname = item.pushname.replace(/[^a-z0-9_\. ]/g, "")
-    item.name = item.name.replace(/[^a-z0-9_\. ]/g, "")
+    item.pushname = item.pushname.replace(/[^a-zA-Z0-9_\. ]/g, "")
+    item.name = item.name.replace(/[^a-zA-Z0-9_\. ]/g, "")
     
     let suporte = await Suporte
         .query()
@@ -96,6 +111,7 @@ const createOrUpdateSuporte = async (item: Suporte): Promise<Suporte> => {
 
     if (!suporte) {
         suporte = await Suporte.create(item)
+        await Rabbit.channel.sendToQueue('update-count-fila', Buffer.from(''))
     } else {
         await suporte.merge({
             name: item.name,
