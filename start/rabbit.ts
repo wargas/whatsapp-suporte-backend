@@ -18,10 +18,14 @@ import Logger from '@ioc:Adonis/Core/Logger'
 */
 Rabbit.channel.consume('new-message', async (msg: ConsumeMessage) => {
     
-    
-    const message: Message = JSON.parse(msg?.content.toString() || '')
-    console.log(`consume ${message.body}`)
+    if(Whatsapp.status !== 'READY') {
+        await Rabbit.channel.nack(msg)
 
+        return;
+    }
+    
+    const message: Message = JSON.parse(msg?.content.toString('utf-8') || '')
+    
     if (message.isStatus) {
         await Rabbit.channel.ack(msg)
         return;
@@ -59,7 +63,7 @@ Rabbit.channel.consume('new-message', async (msg: ConsumeMessage) => {
         await Rabbit.channel.ack(msg)
     } catch (error) {
 
-        console.log('error')
+        console.log(error.sqlMessage)
 
         await Rabbit.channel.nack(msg)
     }
@@ -80,6 +84,8 @@ Rabbit.channel.consume('insert-suporte', async (msg: ConsumeMessage) => {
 
 const createOrUpdateSuporte = async (item: Suporte): Promise<Suporte> => {
 
+    item.pushname = item.pushname.replace(/[^a-z0-9_\. ]/g, "")
+    item.name = item.name.replace(/[^a-z0-9_\. ]/g, "")
     
     let suporte = await Suporte
         .query()
