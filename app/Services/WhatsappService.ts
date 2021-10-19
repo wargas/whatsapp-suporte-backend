@@ -56,6 +56,7 @@ export class WhatsappService {
 
             this.client.on(Events.QR_RECEIVED, qr => {  
                 this.status = 'QRCODE'
+                this.app.logger.info('leia o qr code')
                 Event.emit('whatsapp:QR_RECEIVED', qr)
             })
 
