@@ -18,15 +18,15 @@ import Redis from "@ioc:Adonis/Addons/Redis";
 |
 */
 Rabbit.channel.consume('new-message', async (msg: ConsumeMessage) => {
-    
-    if(Whatsapp.status !== 'READY') {
+
+    if (Whatsapp.status !== 'READY') {
         await Rabbit.channel.nack(msg)
 
         return;
     }
-    
+
     const message: Message = JSON.parse(msg?.content.toString('utf-8') || '')
-    
+
     if (message.isStatus) {
         await Rabbit.channel.ack(msg)
         return;
@@ -56,11 +56,11 @@ Rabbit.channel.consume('new-message', async (msg: ConsumeMessage) => {
         suporte.chat_id = chat.id._serialized
         suporte.contact_id = contato.id._serialized
         suporte.status = 'ABERTO'
+        suporte.unreads = chat.unreadCount
         suporte.openedAt = DateTime.local()
 
         await createOrUpdateSuporte(suporte)
-        Socket.emit('message', { ...message, chat })
-
+        await Socket.emit('message', { ...message, chat })
         await Rabbit.channel.ack(msg)
     } catch (error) {
 
@@ -73,7 +73,7 @@ Rabbit.channel.consume('new-message', async (msg: ConsumeMessage) => {
 
 Rabbit.channel.consume('insert-suporte', async (msg: ConsumeMessage) => {
     const suporte: Suporte = JSON.parse(msg?.content.toString() || '')
-    
+
     try {
         await createOrUpdateSuporte(suporte)
 
@@ -83,25 +83,25 @@ Rabbit.channel.consume('insert-suporte', async (msg: ConsumeMessage) => {
     }
 })
 
-Rabbit.channel.consume('update-count-fila', async(msg: ConsumeMessage) => {
+Rabbit.channel.consume('update-count-fila', async (msg: ConsumeMessage) => {
 
-    const abertos = await Suporte.query()
-    .where('status', 'ABERTO')
-    .whereNull('user_id')
+    setTimeout(async () => {
+        const abertos = await Suporte.query()
+            .where('status', 'ABERTO')
+            .whereNull('user_id')
 
-    console.log('update-count-fila', abertos.length)
+        await Socket.emit('count_fila', abertos.length)
+        await Redis.set('count-fila', abertos.length)
 
-    await Socket.emit('count_fila', abertos.length)
-    await Redis.set('count-fila', abertos.length)
-
-    await Rabbit.channel.ack(msg)
+        await Rabbit.channel.ack(msg)
+    }, 1000)
 })
 
 const createOrUpdateSuporte = async (item: Suporte): Promise<Suporte> => {
 
     item.pushname = item.pushname.replace(/[^a-zA-Z0-9_\. ]/g, "")
     item.name = item.name.replace(/[^a-zA-Z0-9_\. ]/g, "")
-    
+
     let suporte = await Suporte
         .query()
         .where('chat_id', item.chat_id)
@@ -117,7 +117,9 @@ const createOrUpdateSuporte = async (item: Suporte): Promise<Suporte> => {
             name: item.name,
             pushname: item.pushname,
             image_url: item.image_url
-        })
+        }).save()
+
+        await Socket.emit('update-suporte', suporte)
     }
 
     Logger.info(`Suporte criado/atualizado ${suporte.id}`)

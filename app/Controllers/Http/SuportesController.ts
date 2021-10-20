@@ -10,6 +10,7 @@ import { MessageMedia } from 'whatsapp-web';
 import User from 'App/Models/User';
 import Redis from '@ioc:Adonis/Addons/Redis';
 import Rabbit from '@ioc:App/Rabbit';
+import Socket from '@ioc:App/Socket';
 
 
 export default class SuportesController {
@@ -18,7 +19,7 @@ export default class SuportesController {
         return await Suporte.query()
     }
 
-    async novoSuporte({params, auth}: HttpContextContract) {
+    async novoSuporte({ params, auth }: HttpContextContract) {
         const contato_id = params.id;
 
         const contato = await Whatsapp.client.getContactById(contato_id)
@@ -46,22 +47,10 @@ export default class SuportesController {
             .where('user_id', auth?.user?.id || 0)
             .orderBy('updated_at', 'desc')
 
-
-        // const ids = suportes.map(item => item.chat_id)
-
-        // const chats = await Whatsapp.getChats(ids)
-
-        const abertos = await Redis.get('count-fila') || '0'             
+        const abertos = await Redis.get('count-fila') || '0'
 
         return {
-            suportes: suportes.map(suporte => {
-                // const chat = chats.find(chat => chat.id._serialized === suporte.chat_id)
-                return {
-                    ...suporte.serialize(),
-                    unreadCount: 1,
-                    timestamp: 0
-                }
-            }),
+            suportes,
             fila: parseInt(abertos) || 0
         }
     }
@@ -102,6 +91,7 @@ export default class SuportesController {
             .first()
 
         if (!next) {
+            await Rabbit.channel.sendToQueue('update-count-fila', Buffer.from(''))
             return { error: 'NOT_FOUND' }
         }
 
@@ -121,8 +111,18 @@ export default class SuportesController {
         }
         const chat = await Whatsapp.getChat(suporte?.chat_id)
         const messages = await chat.fetchMessages({ limit: 50 })
+       
+        
 
-        await chat.sendSeen()
+        if (chat.unreadCount > 0) {
+            await chat.sendSeen()
+        }
+
+        if(suporte.unreads > 0) {
+            suporte.unreads = 0
+            await suporte.save()
+            await Socket.emit('update-suporte', suporte)
+        }
 
         return { ...suporte.serialize(), messages }
     }

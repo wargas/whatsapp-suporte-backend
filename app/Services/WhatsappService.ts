@@ -1,4 +1,5 @@
 import { ApplicationContract } from '@ioc:Adonis/Core/Application'
+import axios from 'axios';
 import { Events, Client, Chat, WAState } from "whatsapp-web";
 
 
@@ -9,9 +10,9 @@ declare module 'puppeteer' {
         args: string[]
     }
 }
- 
-declare module 'whatsapp-web' {   
-    interface Client { 
+
+declare module 'whatsapp-web' {
+    interface Client {
         getMessageById(messageId: string): Promise<any>
     }
 }
@@ -20,41 +21,54 @@ export class WhatsappService {
 
     public client: Client;
     public status: string;
-    
+
 
     constructor(private app: ApplicationContract) {
         this.status = 'PENDENTE'
     }
 
-    async start() { 
+    async start() {
 
-        let config:any = {
-            puppeteer: {
-                headless: process.env.headless || true,
-                args: ['--no-sandbox'],
-            }
-        }
-
-        if(process.env.browserWSEndpoint) {
-            config.puppeteer.browserWSEndpoint = process.env.browserWSEndpoint
-        }
-        
         try {
-            const Event = this.app.container.use('Adonis/Core/Event')
-            
-            this.client = new Client(config)
+            let config: any = {
+                puppeteer: {
+                    headless: process.env.headless || true,
+                    args: ['--no-sandbox'],
+                }
+            }
 
-                       
+            if (process.env.browserUrl) {
+                const {data} = await axios.get<any>(process.env.browserUrl)
+
+                const webSocketDebuggerUrl = data.webSocketDebuggerUrl;
+
+                if(webSocketDebuggerUrl) {
+                    config.puppeteer.browserWSEndpoint = webSocketDebuggerUrl
+                } else {
+                    this.app.logger.error('Browser server not found')
+                }
+            } else { 
+                 
+                if (process.env.browserWSEndpoint) {
+                    config.puppeteer.browserWSEndpoint = process.env.browserWSEndpoint
+                }
+               
+            }
+
+            this.client = new Client(config)
+            const Event = this.app.container.use('Adonis/Core/Event')
+
+
             this.client.on(Events.READY, (state) => {
                 Event.emit('whatsapp:READY', state)
                 if (this.client.info.pushname) {
                     this.status = 'READY'
                     this.app.logger.info(`Whatsapp ready`)
-                  
+
                 }
             })
 
-            this.client.on(Events.QR_RECEIVED, qr => {  
+            this.client.on(Events.QR_RECEIVED, qr => {
                 this.status = 'QRCODE'
                 this.app.logger.info('leia o qr code')
                 Event.emit('whatsapp:QR_RECEIVED', qr)
@@ -85,32 +99,32 @@ export class WhatsappService {
                 this.client = new Client(config)
             })
 
-            this.client.initialize()  
+            this.client.initialize()
 
         } catch (err) {
             this.app.logger.error('Erro no Whatsapp', err)
-        }     
+        }
     }
 
     async getChats(ids: string[] = []): Promise<Chat[]> {
-        if(this.client.info.pushname) {
+        if (this.client.info.pushname) {
             const chats = await this.client.getChats()
 
-            if(ids.length === 0) { 
+            if (ids.length === 0) {
                 return chats
-            }  
+            }
 
-            return chats.filter(chat =>  ids.some(id => id === chat.id._serialized))
+            return chats.filter(chat => ids.some(id => id === chat.id._serialized))
         }
 
         return []
     }
 
     async getChat(id: string): Promise<Chat> {
-       
-        if(this.client.info.pushname) {
+
+        if (this.client.info.pushname) {
             return this.client.getChatById(id)
-        }   
+        }
         return {} as Chat
     }
 

@@ -34,6 +34,10 @@ export default class Suporte extends BaseModel {
 
   @column()
   public user_id: Number
+  
+  @column()
+  public unreads: Number
+
 
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime
