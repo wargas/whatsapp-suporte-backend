@@ -1,11 +1,11 @@
 import { ApplicationContract } from '@ioc:Adonis/Core/Application'
-import axios from 'axios';
 import { Events, Client, Chat, WAState } from "whatsapp-web";
 
 
 declare module 'puppeteer' {
     interface LaunchOptions {
         browserWSEndpoint?: string,
+        browserURL?: string,
         headless?: boolean,
         args: string[]
     }
@@ -28,6 +28,8 @@ export class WhatsappService {
     }
 
     async start() {
+        const Redis = this.app.container.use('Adonis/Addons/Redis')
+        this.app.logger.info(`Estamos em ${this.app.nodeEnvironment}`)
 
         try {
             let config: any = {
@@ -37,27 +39,22 @@ export class WhatsappService {
                 }
             }
 
-            if (process.env.browserUrl) {
-                const {data} = await axios.get<any>(process.env.browserUrl)
+            if (process.env.browserURL) {
+                config.puppeteer.browserURL = process.env.browserURL
+            } 
+            
+            if (process.env.browserWSEndpoint) {
+                config.puppeteer.browserWSEndpoint = process.env.browserWSEndpoint
+            }
 
-                const webSocketDebuggerUrl = data.webSocketDebuggerUrl;
+            const session = await Redis.get('whatsapp:session')
 
-                if(webSocketDebuggerUrl) {
-                    config.puppeteer.browserWSEndpoint = webSocketDebuggerUrl
-                } else {
-                    this.app.logger.error('Browser server not found')
-                }
-            } else { 
-                 
-                if (process.env.browserWSEndpoint) {
-                    config.puppeteer.browserWSEndpoint = process.env.browserWSEndpoint
-                }
-               
+            if(session) {
+                config.session = JSON.parse(session)
             }
 
             this.client = new Client(config)
             const Event = this.app.container.use('Adonis/Core/Event')
-
 
             this.client.on(Events.READY, (state) => {
                 Event.emit('whatsapp:READY', state)
@@ -74,7 +71,8 @@ export class WhatsappService {
                 Event.emit('whatsapp:QR_RECEIVED', qr)
             })
 
-            this.client.on(Events.AUTHENTICATED, session => {
+            this.client.on(Events.AUTHENTICATED, async session => {
+                await Redis.set('whatsapp:session', JSON.stringify(session))
                 this.status = 'READY'
                 Event.emit('whatsapp:AUTHENTICATED', session)
             })
@@ -96,7 +94,7 @@ export class WhatsappService {
             })
 
             this.client.on(Events.DISCONNECTED, () => {
-                this.client = new Client(config)
+                
             })
 
             this.client.initialize()

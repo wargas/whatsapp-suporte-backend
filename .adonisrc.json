@@ -39,8 +39,6 @@
     {
       "file": "./start/rabbit",
       "environment": [
-        "console",
-        "repl",
         "web"
       ]
     }

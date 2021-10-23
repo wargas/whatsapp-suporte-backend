@@ -1,3 +1,4 @@
+import Application from '@ioc:Adonis/Core/Application';
 import { ApplicationContract } from '@ioc:Adonis/Core/Application'
 import { RabbitService } from 'App/Services/RabbitService'
 /*
@@ -24,6 +25,9 @@ export default class RabbitProvider {
   }
 
   public register () {
+    if(Application.environment !== 'web') {
+      return;
+    }
     // Register your own bindings
     this.app.container.singleton('App/Rabbit', () => {
       const Rabbit = new RabbitService(this.app) 
@@ -33,6 +37,9 @@ export default class RabbitProvider {
   }
 
   public async boot () {
+    if(Application.environment !== 'web') {
+      return;
+    }
     // All bindings are ready, feel free to use them
     const Rabbit = this.app.container.use('App/Rabbit')
 

@@ -1,3 +1,4 @@
+import Application from '@ioc:Adonis/Core/Application'
 import { ApplicationContract } from '@ioc:Adonis/Core/Application'
 import { WhatsappService } from 'App/Services/WhatsappService'
 
@@ -10,6 +11,7 @@ export default class WhatsappProvider {
   }
 
   public register () {
+    
     this.app.container.singleton('App/Whatsapp', () => {
       return this.Service = new WhatsappService(this.app)
     })
@@ -20,6 +22,9 @@ export default class WhatsappProvider {
   }
 
   public async ready () {
+    if(Application.environment !== 'web') {
+      return;
+    }
     this.app.container.use('App/Socket').emit('status', 'PENDENTE')
     await this.app.container.use('App/Whatsapp').start()
   }

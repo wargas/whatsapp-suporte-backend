@@ -1,3 +1,4 @@
+import Application from '@ioc:Adonis/Core/Application'
 import { ApplicationContract } from '@ioc:Adonis/Core/Application'
 import { WhatsappService } from 'App/Services/WhatsappService'
 import { Server, Socket } from 'socket.io'
@@ -12,6 +13,9 @@ export default class SocketProvider {
   }
 
   public register() {
+    if(Application.environment !== 'web') {
+      return;
+    }
     // Register your own bindings
     this.app.container.singleton('App/Socket', () => {
       const server = new Server({
@@ -30,6 +34,9 @@ export default class SocketProvider {
   }
 
   public async ready() {
+    if(Application.environment !== 'web') {
+      return;
+    }
     // App is ready
     const AdonisServer = this.app.container.use('Adonis/Core/Server')
 
