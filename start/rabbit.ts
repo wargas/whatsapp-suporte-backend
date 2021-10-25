@@ -78,9 +78,9 @@ Rabbit.channel.consume('insert-suporte', async (msg: ConsumeMessage) => {
         await createOrUpdateSuporte(suporte)
 
         await Rabbit.channel.ack(msg)
-    } catch (error) {
+    } catch (error) {        
         await Rabbit.channel.nack(msg)
-    }
+    }    
 })
 
 Rabbit.channel.consume('update-count-fila', async (msg: ConsumeMessage) => {
@@ -99,8 +99,8 @@ Rabbit.channel.consume('update-count-fila', async (msg: ConsumeMessage) => {
 
 const createOrUpdateSuporte = async (item: Suporte): Promise<Suporte> => {
 
-    item.pushname = item.pushname.replace(/[^a-zA-Z0-9_\. ]/g, "")
-    item.name = item.name.replace(/[^a-zA-Z0-9_\. ]/g, "")
+    item.pushname = item.pushname?.replace(/[^a-zA-Z0-9_\. ]/g, "")
+    item.name = item.name?.replace(/[^a-zA-Z0-9_\. ]/g, "")
 
     let suporte = await Suporte
         .query()

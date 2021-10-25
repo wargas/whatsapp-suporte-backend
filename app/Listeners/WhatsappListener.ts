@@ -1,5 +1,4 @@
 import Socket from '@ioc:App/Socket';
-import Suporte from 'App/Models/Suporte';
 import { DateTime } from 'luxon';
 import { Message } from 'whatsapp-web';
 import Whatsapp from '@ioc:App/Whatsapp';
@@ -23,7 +22,7 @@ export default class WhatsappListener {
 
         console.time('queue-chats')
         for await (let chat of unreads) {
-            const suporte = new Suporte()
+            const suporte:any = {}
             const contact = await chat.getContact()
             const imageUrl = await contact.getProfilePicUrl()
 
@@ -33,7 +32,7 @@ export default class WhatsappListener {
             suporte.chat_id = chat.id._serialized
             suporte.contact_id = contact.id._serialized
             suporte.status = 'ABERTO'
-            suporte.openedAt = DateTime.local()
+            suporte.openedAt = DateTime.local().toSQL()
 
             Rabbit.channel.sendToQueue('insert-suporte', Buffer.from(JSON.stringify(suporte), 'utf-8'))
            
