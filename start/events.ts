@@ -14,3 +14,6 @@ Event.on('whatsapp:AUTHENTICATED', session => {
 
 Event.on('whatsapp:READY', 'WhatsappListener.onReady')
 
+// Event.on('db:query', ev => {
+//     // console.log(ev)
+// })

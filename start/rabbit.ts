@@ -64,18 +64,16 @@ Rabbit.channel.consume('new-message', async (msg: ConsumeMessage) => {
         await Rabbit.channel.ack(msg)
     } catch (error) {
 
-        console.log(error.sqlMessage)
-
         await Rabbit.channel.nack(msg)
     }
 
 })
 
 Rabbit.channel.consume('insert-suporte', async (msg: ConsumeMessage) => {
-    const suporte: Suporte = JSON.parse(msg?.content.toString() || '')
-
+    const suporteJson = JSON.parse(msg?.content.toString() || '')
+    
     try {
-        await createOrUpdateSuporte(suporte)
+        await createOrUpdateSuporte(suporteJson)
 
         await Rabbit.channel.ack(msg)
     } catch (error) {        
@@ -108,9 +106,9 @@ const createOrUpdateSuporte = async (item: Suporte): Promise<Suporte> => {
         .where('status', 'ABERTO')
         .first()
 
-
     if (!suporte) {
         suporte = await Suporte.create(item)
+        suporte.openedAt = DateTime.local()
         await Rabbit.channel.sendToQueue('update-count-fila', Buffer.from(''))
     } else {
         await suporte.merge({
